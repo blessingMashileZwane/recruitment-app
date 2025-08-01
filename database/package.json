@@ -3,13 +3,25 @@
 	"version": "1.0.0",
 	"description": "Database setup for recruitment app",
 	"scripts": {
-		"init": "node scripts/init.js",
-		"migrate:up": "node scripts/migrate.js up",
-		"migrate:down": "node scripts/migrate.js down",
-		"seed": "node scripts/seed.js"
+		"build": "tsc",
+		"init": "ts-node scripts/init.ts",
+		"migrate:up": "ts-node scripts/migrate.ts up",
+		"migrate:down": "ts-node scripts/migrate.ts down",
+		"seed": "ts-node scripts/seed.ts",
+		"setup": "bash scripts/setup-db.sh",
+		"check-db": "ts-node scripts/check-db.ts"
 	},
 	"dependencies": {
 		"pg": "^8.11.3",
 		"dotenv": "^16.3.1"
-	}
+	},
+	"devDependencies": {
+		"@types/node": "^20.5.0",
+		"@types/pg": "^8.10.2",
+		"ts-node": "^10.9.1",
+		"typescript": "^5.1.6"
+	},
+	"main": "dist/scripts/init.js",
+	"author": "",
+	"license": "ISC"
 }

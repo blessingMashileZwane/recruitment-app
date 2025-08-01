@@ -1,14 +1,21 @@
 {
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+	"compilerOptions": {
+		"target": "es2018",
+		"module": "commonjs",
+		"lib": ["es2018", "esnext.asynciterable"],
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"strictPropertyInitialization": false,
+		"strict": true,
+		"strictNullChecks": true,
+		"moduleResolution": "node",
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"sourceMap": true
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "**/*.spec.ts"]
 }

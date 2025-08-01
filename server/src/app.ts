@@ -1,22 +1,45 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import routes from './routes/index';
-import { connectToDatabase } from './config/database';
+import "reflect-metadata";
+import express from "express";
+import { ApolloServer } from "apollo-server-express";
+import { buildSchema } from "type-graphql";
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+import { CandidateResolver } from "./resolvers/CandidateResolver";
+import { getDataSource } from "./config";
 
-// Middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+async function bootstrap() {
+	const dataSource = await getDataSource();
 
-// Connect to the database
-connectToDatabase();
+	const schema = await buildSchema({
+		resolvers: [CandidateResolver],
+		container: { get: (cls) => new cls(dataSource) },
+		validate: false,
+	});
 
-// Routes
-app.use('/api', routes);
+	const server = new ApolloServer({
+		schema,
+	});
 
-// Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+	const app = express();
+
+	await server.start();
+
+	app.use(express.json());
+
+	await new Promise<void>((resolve) => {
+		server.applyMiddleware({
+			app: app as any,
+			path: "/graphql",
+			cors: true,
+		});
+		resolve();
+	});
+
+	const PORT = process.env.PORT || 5000;
+	app.listen(PORT, () => {
+		console.log(
+			`Server running at http://localhost:${PORT}${server.graphqlPath}`
+		);
+	});
+}
+
+bootstrap().catch(console.error);

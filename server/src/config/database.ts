@@ -1,11 +1,44 @@
-import { Pool } from 'pg';
+import { DataSource } from "typeorm";
+import {
+	CandidateEntity,
+	CandidateSkillEntity,
+	SkillEntity,
+	InterviewProgressEntity,
+	JobPositionEntity,
+	InterviewStageEntity,
+	CandidateHistoryEntity,
+	CandidateSkillHistoryEntity,
+	SkillHistoryEntity,
+	InterviewProgressHistoryEntity,
+	JobPositionHistoryEntity,
+	InterviewStageHistoryEntity,
+} from "../entities";
 
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: Number(process.env.DB_PORT) || 5432,
-});
+export async function getDataSource() {
+	const AppDataSource = new DataSource({
+		type: "postgres",
+		host: process.env.DB_HOST || "localhost",
+		port: parseInt(process.env.DB_PORT || "5432"),
+		username: process.env.DB_USER || "user",
+		password: process.env.DB_PASSWORD || "password",
+		database: process.env.DB_NAME || "recruitment_db",
+		entities: [
+			CandidateEntity,
+			CandidateSkillEntity,
+			SkillEntity,
+			InterviewProgressEntity,
+			InterviewStageEntity,
+			JobPositionEntity,
+			CandidateHistoryEntity,
+			CandidateSkillHistoryEntity,
+			SkillHistoryEntity,
+			InterviewProgressHistoryEntity,
+			JobPositionHistoryEntity,
+			InterviewStageHistoryEntity,
+		],
+		synchronize: true,
+	});
 
-export default pool;
+	await AppDataSource.initialize();
+	return AppDataSource;
+}

@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   client:
@@ -17,7 +17,7 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - DATABASE_URL=postgres://user:password@db:5432/recruitment_db
+      - DATABASE_URL=postgres://postgres:blessing@db:5432/recruitment_db
     depends_on:
       - db
 
