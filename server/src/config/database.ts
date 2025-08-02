@@ -2,15 +2,13 @@ import { DataSource } from "typeorm";
 import {
 	CandidateEntity,
 	CandidateSkillEntity,
-	SkillEntity,
 	InterviewProgressEntity,
-	JobPositionEntity,
+	JobApplicationEntity,
 	InterviewStageEntity,
 	CandidateHistoryEntity,
 	CandidateSkillHistoryEntity,
-	SkillHistoryEntity,
 	InterviewProgressHistoryEntity,
-	JobPositionHistoryEntity,
+	JobApplicationHistoryEntity,
 	InterviewStageHistoryEntity,
 } from "../entities";
 
@@ -25,19 +23,18 @@ export async function getDataSource() {
 		entities: [
 			CandidateEntity,
 			CandidateSkillEntity,
-			SkillEntity,
 			InterviewProgressEntity,
 			InterviewStageEntity,
-			JobPositionEntity,
+			JobApplicationEntity,
 			CandidateHistoryEntity,
 			CandidateSkillHistoryEntity,
-			SkillHistoryEntity,
 			InterviewProgressHistoryEntity,
-			JobPositionHistoryEntity,
+			JobApplicationHistoryEntity,
 			InterviewStageHistoryEntity,
 		],
-		synchronize: false, // Disable auto-sync to prevent schema changes
-		logging: ["error", "schema"], // Only log errors and schema changes
+		synchronize: true,
+		dropSchema: true, // This will drop the schema each time to ensure clean sync
+		logging: true, // This will show us what SQL is being executed
 	});
 
 	await AppDataSource.initialize();

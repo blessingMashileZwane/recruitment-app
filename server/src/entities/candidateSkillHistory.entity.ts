@@ -1,12 +1,12 @@
+import { Field, ID, ObjectType } from "type-graphql";
 import {
-	Entity,
-	PrimaryGeneratedColumn,
 	Column,
 	CreateDateColumn,
-	ManyToOne,
+	Entity,
 	JoinColumn,
+	ManyToOne,
+	PrimaryGeneratedColumn,
 } from "typeorm";
-import { Field, ID, ObjectType } from "type-graphql";
 import { CandidateSkillEntity } from "./candidateSkill.entity";
 
 @ObjectType()
@@ -24,29 +24,21 @@ export class CandidateSkillHistoryEntity {
 	@Column()
 	action: string;
 
-	@Field({ nullable: true })
-	@Column({ type: "text", nullable: true })
-	description?: string;
+	@Field()
+	@Column()
+	university: string;
 
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	changedBy?: string;
+	@Field()
+	@Column()
+	qualification: string;
 
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	previousYearsOfExperience?: number;
+	@Field()
+	@Column()
+	yearsOfExperience: number;
 
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	newYearsOfExperience?: number;
-
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	previousProficiencyLevel?: number;
-
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	newProficiencyLevel?: number;
+	@Field()
+	@Column()
+	proficiencyLevel: number;
 
 	@Field(() => CandidateSkillEntity)
 	@ManyToOne(
@@ -59,4 +51,8 @@ export class CandidateSkillHistoryEntity {
 	@Field()
 	@CreateDateColumn()
 	createdAt: Date;
+
+	@Field()
+	@Column()
+	createdBy: string;
 }

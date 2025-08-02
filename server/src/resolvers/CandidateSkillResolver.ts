@@ -25,30 +25,22 @@ export class CandidateSkillResolver {
 		});
 	}
 
-	@Query(() => [CandidateSkillEntity])
-	async candidateSkillsBySkill(
-		@Arg("skillId", () => ID) skillId: string
-	): Promise<CandidateSkillEntity[]> {
-		const repository = this.dataSource.getRepository(CandidateSkillEntity);
-		return repository.find({
-			where: { skillId },
-			relations: ["candidate", "skill"],
-		});
-	}
-
 	@Mutation(() => CandidateSkillEntity)
 	async createCandidateSkill(
 		@Arg("candidateId", () => ID) candidateId: string,
-		@Arg("skillId", () => ID) skillId: string,
+		@Arg("university", () => ID) university: string,
 		@Arg("yearsOfExperience") yearsOfExperience: number,
-		@Arg("proficiencyLevel") proficiencyLevel: number
+		@Arg("proficiencyLevel") proficiencyLevel: number,
+		@Arg("qualification", () => String, { nullable: true })
+		qualification?: string
 	): Promise<CandidateSkillEntity> {
 		const repository = this.dataSource.getRepository(CandidateSkillEntity);
 		const candidateSkill = repository.create({
 			candidateId,
-			skillId,
+			university,
 			yearsOfExperience,
 			proficiencyLevel,
+			qualification,
 		});
 		return repository.save(candidateSkill);
 	}

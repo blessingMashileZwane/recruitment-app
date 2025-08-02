@@ -31,7 +31,7 @@ async function initDatabase() {
 		await client.query("SET search_path TO recruitment, public");
 
 		const initSQL = fs.readFileSync(
-			path.join(__dirname, "../migrations/001.sql"),
+			path.join(__dirname, "../migrations/001_init_db.sql"),
 			"utf8"
 		);
 		await client.query(initSQL);

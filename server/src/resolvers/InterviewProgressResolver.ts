@@ -1,6 +1,7 @@
 import { Resolver, Query, Mutation, Arg, ID } from "type-graphql";
-import { InterviewProgressEntity, InterviewStatus } from "../entities";
+import { InterviewProgressEntity } from "../entities";
 import { DataSource } from "typeorm";
+import { InterviewStatus } from "../types";
 
 @Resolver(() => InterviewProgressEntity)
 export class InterviewProgressResolver {
@@ -10,7 +11,7 @@ export class InterviewProgressResolver {
 	async interviewProgress(): Promise<InterviewProgressEntity[]> {
 		const repository = this.dataSource.getRepository(InterviewProgressEntity);
 		return repository.find({
-			relations: ["candidate", "jobPosition", "stage"],
+			relations: ["candidate", "jobApplication", "stage"],
 		});
 	}
 
@@ -21,28 +22,22 @@ export class InterviewProgressResolver {
 		const repository = this.dataSource.getRepository(InterviewProgressEntity);
 		return repository.findOne({
 			where: { id },
-			relations: ["candidate", "jobPosition", "stage"],
+			relations: ["candidate", "jobApplication", "stage"],
 		});
 	}
 
 	@Mutation(() => InterviewProgressEntity)
 	async createInterviewProgress(
 		@Arg("candidateId", () => ID) candidateId: string,
-		@Arg("jobPositionId", () => ID) jobPositionId: string,
-		@Arg("stageId", () => ID) stageId: string,
-		@Arg("scheduledDate", { nullable: true }) scheduledDate?: Date,
-		@Arg("feedback", { nullable: true }) feedback?: string,
-		@Arg("score", { nullable: true }) score?: number
+		@Arg("jobApplicationId", () => ID) jobApplicationId: string,
+		@Arg("stageId", () => ID) stageId: string
 	): Promise<InterviewProgressEntity> {
 		const repository = this.dataSource.getRepository(InterviewProgressEntity);
 		const progress = repository.create({
 			candidateId,
-			jobPositionId,
+			jobApplicationId,
 			stageId,
 			status: InterviewStatus.PENDING,
-			scheduledDate,
-			feedback,
-			score,
 		});
 		return repository.save(progress);
 	}
@@ -53,18 +48,13 @@ export class InterviewProgressResolver {
 		@Arg("stageId", () => ID, { nullable: true }) stageId?: string,
 		@Arg("status", () => InterviewStatus, { nullable: true })
 		status?: InterviewStatus,
-		@Arg("scheduledDate", { nullable: true }) scheduledDate?: Date,
-		@Arg("feedback", { nullable: true }) feedback?: string,
-		@Arg("score", { nullable: true }) score?: number
+		@Arg("scheduledDate", { nullable: true }) scheduledDate?: Date
 	): Promise<InterviewProgressEntity> {
 		const repository = this.dataSource.getRepository(InterviewProgressEntity);
 		const progress = await repository.findOneOrFail({ where: { id } });
 
 		if (stageId) progress.stageId = stageId;
 		if (status) progress.status = status;
-		if (scheduledDate !== undefined) progress.scheduledDate = scheduledDate;
-		if (feedback !== undefined) progress.feedback = feedback;
-		if (score !== undefined) progress.score = score;
 
 		return repository.save(progress);
 	}
@@ -76,18 +66,18 @@ export class InterviewProgressResolver {
 		const repository = this.dataSource.getRepository(InterviewProgressEntity);
 		return repository.find({
 			where: { candidateId },
-			relations: ["candidate", "jobPosition", "stage"],
+			relations: ["candidate", "jobApplication", "stage"],
 		});
 	}
 
 	@Query(() => [InterviewProgressEntity])
-	async getInterviewProgressByJobPosition(
-		@Arg("jobPositionId", () => ID) jobPositionId: string
+	async getInterviewProgressByJobApplication(
+		@Arg("jobApplicationId", () => ID) jobApplicationId: string
 	): Promise<InterviewProgressEntity[]> {
 		const repository = this.dataSource.getRepository(InterviewProgressEntity);
 		return repository.find({
-			where: { jobPositionId },
-			relations: ["candidate", "jobPosition", "stage"],
+			where: { jobApplicationId },
+			relations: ["candidate", "jobApplication", "stage"],
 		});
 	}
 

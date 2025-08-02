@@ -24,37 +24,17 @@ export class InterviewStageHistoryEntity {
 	@Column()
 	action: string;
 
+	@Field()
+	@Column()
+	name: string;
+
 	@Field({ nullable: true })
 	@Column({ type: "text", nullable: true })
 	description?: string;
 
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	changedBy?: string;
-
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	previousName?: string;
-
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	newName?: string;
-
-	@Field({ nullable: true })
-	@Column({ type: "text", nullable: true })
-	previousDescription?: string;
-
-	@Field({ nullable: true })
-	@Column({ type: "text", nullable: true })
-	newDescription?: string;
-
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	previousOrderIndex?: number;
-
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	newOrderIndex?: number;
+	@Field()
+	@Column()
+	feedback: string;
 
 	@Field(() => InterviewStageEntity)
 	@ManyToOne(() => InterviewStageEntity, (stage) => stage.history)
@@ -64,4 +44,8 @@ export class InterviewStageHistoryEntity {
 	@Field()
 	@CreateDateColumn()
 	createdAt: Date;
+
+	@Field()
+	@Column()
+	createdBy: string;
 }

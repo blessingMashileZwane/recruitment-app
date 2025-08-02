@@ -1,15 +1,19 @@
+import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
 import {
-	Entity,
-	PrimaryGeneratedColumn,
 	Column,
 	CreateDateColumn,
-	ManyToOne,
+	Entity,
 	JoinColumn,
+	ManyToOne,
+	PrimaryGeneratedColumn,
 } from "typeorm";
-import { Field, ID, ObjectType } from "type-graphql";
 import { InterviewProgressEntity } from "./interviewProgress.entity";
-import { InterviewStageEntity } from "./interviewStage.entity";
-import { InterviewStatus } from "./interviewProgress.entity";
+import { InterviewStatus } from "../types";
+
+registerEnumType(InterviewStatus, {
+	name: "InterviewStatus",
+	description: "The status of an interview",
+});
 
 @ObjectType()
 @Entity("interview_progress_history")
@@ -22,57 +26,45 @@ export class InterviewProgressHistoryEntity {
 	@Column()
 	interviewProgressId: string;
 
-	@Field(() => InterviewStatus, { nullable: true })
-	@Field(() => InterviewStatus, { nullable: true })
+	@Field()
+	@Column()
+	candidateId: string;
+
+	@Field()
+	@Column()
+	jobApplicationId: string;
+
+	@Field()
+	@Column()
+	stageId: string;
+
+	@Field(() => InterviewStatus)
 	@Column({
 		type: "enum",
 		enum: InterviewStatus,
 		enumName: "interview_status",
-		nullable: true,
+		default: InterviewStatus.PENDING,
 	})
-	previousStatus?: InterviewStatus;
+	status: InterviewStatus;
 
-	@Field(() => InterviewStatus, { nullable: true })
-	@Column({
-		type: "enum",
-		enum: InterviewStatus,
-		enumName: "interview_status",
-		nullable: true,
-	})
-	newStatus?: InterviewStatus;
+	@Field({ nullable: true })
+	@Column({ type: "timestamp", nullable: true })
+	scheduledDate?: Date;
 
 	@Field({ nullable: true })
 	@Column({ nullable: true })
-	previousStageId?: string;
-
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	newStageId?: string;
-
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	changedBy?: string;
-
-	@Field({ nullable: true })
-	@Column({ type: "text", nullable: true })
-	notes?: string;
+	score?: number;
 
 	@Field(() => InterviewProgressEntity)
 	@ManyToOne(() => InterviewProgressEntity, (progress) => progress.history)
 	@JoinColumn({ name: "interview_progress_id" })
 	interviewProgress: InterviewProgressEntity;
 
-	@Field(() => InterviewStageEntity)
-	@ManyToOne(() => InterviewStageEntity)
-	@JoinColumn({ name: "previous_stage_id" })
-	previousStage?: InterviewStageEntity;
-
-	@Field(() => InterviewStageEntity, { nullable: true })
-	@ManyToOne(() => InterviewStageEntity)
-	@JoinColumn({ name: "new_stage_id" })
-	newStage?: InterviewStageEntity;
-
 	@Field()
 	@CreateDateColumn()
 	createdAt: Date;
+
+	@Field()
+	@Column()
+	createdBy: string;
 }

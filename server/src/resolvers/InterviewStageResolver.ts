@@ -23,11 +23,11 @@ export class InterviewStageResolver {
 	@Mutation(() => InterviewStageEntity)
 	async createInterviewStage(
 		@Arg("name") name: string,
-		@Arg("orderIndex") orderIndex: number,
+		@Arg("feedback") feedback: string,
 		@Arg("description", { nullable: true }) description?: string
 	): Promise<InterviewStageEntity> {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
-		const stage = repository.create({ name, orderIndex, description });
+		const stage = repository.create({ name, feedback, description });
 		return repository.save(stage);
 	}
 
@@ -35,14 +35,14 @@ export class InterviewStageResolver {
 	async updateInterviewStage(
 		@Arg("id", () => ID) id: string,
 		@Arg("name", { nullable: true }) name?: string,
-		@Arg("orderIndex", { nullable: true }) orderIndex?: number,
+		@Arg("feedback", { nullable: true }) feedback?: string,
 		@Arg("description", { nullable: true }) description?: string
 	): Promise<InterviewStageEntity> {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
 		const stage = await repository.findOneOrFail({ where: { id } });
 
 		if (name) stage.name = name;
-		if (orderIndex !== undefined) stage.orderIndex = orderIndex;
+		if (feedback !== undefined) stage.feedback = feedback;
 		if (description !== undefined) stage.description = description;
 
 		return repository.save(stage);

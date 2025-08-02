@@ -1,15 +1,15 @@
+import { Field, ID, ObjectType } from "type-graphql";
 import {
-	Entity,
-	PrimaryGeneratedColumn,
 	Column,
 	CreateDateColumn,
+	Entity,
+	JoinColumn,
 	ManyToOne,
 	OneToMany,
-	JoinColumn,
+	PrimaryGeneratedColumn,
+	UpdateDateColumn,
 } from "typeorm";
-import { Field, ID, ObjectType } from "type-graphql";
 import { CandidateEntity } from "./candidate.entity";
-import { SkillEntity } from "./skill.entity";
 import { CandidateSkillHistoryEntity } from "./candidateSkillHistory.entity";
 
 @ObjectType()
@@ -25,7 +25,11 @@ export class CandidateSkillEntity {
 
 	@Field()
 	@Column()
-	skillId: string;
+	university: string;
+
+	@Field()
+	@Column()
+	qualification: string;
 
 	@Field()
 	@Column()
@@ -40,11 +44,6 @@ export class CandidateSkillEntity {
 	@JoinColumn({ name: "candidate_id" })
 	candidate: CandidateEntity;
 
-	@Field(() => SkillEntity)
-	@ManyToOne(() => SkillEntity, (skill) => skill.candidateSkills)
-	@JoinColumn({ name: "skill_id" })
-	skill: SkillEntity;
-
 	@Field(() => [CandidateSkillHistoryEntity])
 	@OneToMany(
 		() => CandidateSkillHistoryEntity,
@@ -55,4 +54,16 @@ export class CandidateSkillEntity {
 	@Field()
 	@CreateDateColumn()
 	createdAt: Date;
+
+	@Field()
+	@Column()
+	createdBy: string;
+
+	@Field()
+	@UpdateDateColumn()
+	updatedAt: Date;
+
+	@Field()
+	@Column()
+	updatedBy: string;
 }

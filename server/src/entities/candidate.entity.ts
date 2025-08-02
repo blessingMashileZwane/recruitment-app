@@ -10,13 +10,7 @@ import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
 import { InterviewProgressEntity } from "./interviewProgress.entity";
 import { CandidateHistoryEntity } from "./candidateHistory.entity";
 import { CandidateSkillEntity } from "./candidateSkill.entity";
-
-export enum CandidateStatus {
-	ACTIVE = "active",
-	HIRED = "hired",
-	REJECTED = "rejected",
-	WITHDRAWN = "withdrawn",
-}
+import { CandidateStatus } from "../types";
 
 registerEnumType(CandidateStatus, {
 	name: "CandidateStatus",
@@ -24,7 +18,7 @@ registerEnumType(CandidateStatus, {
 });
 
 @ObjectType()
-@Entity("candidates")
+@Entity("candidate")
 export class CandidateEntity {
 	@Field(() => ID)
 	@PrimaryGeneratedColumn("uuid")
@@ -82,6 +76,15 @@ export class CandidateEntity {
 	@CreateDateColumn()
 	createdAt: Date;
 
+	@Field()
+	@Column()
+	createdBy: String;
+
+	@Field()
 	@UpdateDateColumn()
 	updatedAt: Date;
+
+	@Field()
+	@Column()
+	updatedBy: String;
 }

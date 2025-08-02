@@ -7,6 +7,13 @@ import {
 	JoinColumn,
 } from "typeorm";
 import { CandidateEntity } from "./candidate.entity";
+import { Field, registerEnumType } from "type-graphql";
+import { CandidateStatus } from "../types";
+
+registerEnumType(CandidateStatus, {
+	name: "CandidateStatus",
+	description: "The status of a candidate in the recruitment process",
+});
 
 @Entity("candidate_history")
 export class CandidateHistoryEntity {
@@ -19,25 +26,41 @@ export class CandidateHistoryEntity {
 	@Column()
 	action: string;
 
-	@Column({ nullable: true })
-	description?: string;
+	@Field()
+	@Column()
+	firstName: string;
 
-	@Column({ nullable: true })
-	changedBy?: string;
+	@Field()
+	@Column()
+	lastName: string;
 
+	@Field()
+	@Column({ unique: true })
+	email: string;
+
+	@Field({ nullable: true })
+	@Column({ nullable: true })
+	phone?: string;
+
+	@Field({ nullable: true })
+	@Column({ nullable: true })
+	currentLocation?: string;
+
+	@Field({ nullable: true })
+	@Column({ nullable: true })
+	citizenship?: string;
+
+	@Field(() => CandidateStatus)
 	@Column({
 		type: "enum",
-		enum: ["active", "hired", "rejected", "withdrawn"],
-		nullable: true,
+		enum: CandidateStatus,
+		default: CandidateStatus.ACTIVE,
 	})
-	previousStatus?: "active" | "hired" | "rejected" | "withdrawn";
+	status: CandidateStatus;
 
-	@Column({
-		type: "enum",
-		enum: ["active", "hired", "rejected", "withdrawn"],
-		nullable: true,
-	})
-	newStatus?: "active" | "hired" | "rejected" | "withdrawn";
+	@Field({ nullable: true })
+	@Column({ nullable: true })
+	resumeUrl?: string;
 
 	@ManyToOne(() => CandidateEntity, (candidate) => candidate.history)
 	@JoinColumn({ name: "candidate_id" })
@@ -45,4 +68,7 @@ export class CandidateHistoryEntity {
 
 	@CreateDateColumn()
 	createdAt: Date;
+
+	@Column()
+	createdBy: String;
 }

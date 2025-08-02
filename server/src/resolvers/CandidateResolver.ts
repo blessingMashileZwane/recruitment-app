@@ -1,6 +1,7 @@
 import { Resolver, Query, Mutation, Arg, ID } from "type-graphql";
-import { CandidateEntity, CandidateStatus } from "../entities";
+import { CandidateEntity } from "../entities";
 import { DataSource } from "typeorm";
+import { CandidateStatus } from "../types";
 
 @Resolver(() => CandidateEntity)
 export class CandidateResolver {

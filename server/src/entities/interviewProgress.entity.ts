@@ -11,15 +11,9 @@ import {
 import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
 import { CandidateEntity } from "./candidate.entity";
 import { InterviewProgressHistoryEntity } from "./interviewProgressHistory.entity";
-import { JobPositionEntity } from "./jobPosition.entity";
+import { JobApplicationEntity } from "./jobApplication.entity";
 import { InterviewStageEntity } from "./interviewStage.entity";
-
-export enum InterviewStatus {
-	SCHEDULED = "scheduled",
-	COMPLETED = "completed",
-	CANCELLED = "cancelled",
-	PENDING = "pending",
-}
+import { InterviewStatus } from "../types";
 
 registerEnumType(InterviewStatus, {
 	name: "InterviewStatus",
@@ -39,21 +33,28 @@ export class InterviewProgressEntity {
 
 	@Field()
 	@Column()
-	jobPositionId: string;
+	jobApplicationId: string;
 
 	@Field()
 	@Column()
 	stageId: string;
+
+	@Field(() => InterviewStatus)
+	@Column({ type: "enum", enum: InterviewStatus })
+	status: InterviewStatus;
 
 	@Field(() => CandidateEntity)
 	@ManyToOne(() => CandidateEntity, (candidate) => candidate.interviewProgress)
 	@JoinColumn({ name: "candidate_id" })
 	candidate: CandidateEntity;
 
-	@Field(() => JobPositionEntity)
-	@ManyToOne(() => JobPositionEntity, (position) => position.interviewProgress)
-	@JoinColumn({ name: "job_position_id" })
-	jobPosition: JobPositionEntity;
+	@Field(() => JobApplicationEntity)
+	@ManyToOne(
+		() => JobApplicationEntity,
+		(application) => application.interviewProgress
+	)
+	@JoinColumn({ name: "job_application_id" })
+	jobApplication: JobApplicationEntity;
 
 	@Field(() => InterviewStageEntity)
 	@ManyToOne(() => InterviewStageEntity, (stage) => stage.interviewProgress)
@@ -67,32 +68,19 @@ export class InterviewProgressEntity {
 	)
 	history: InterviewProgressHistoryEntity[];
 
-	@Field(() => InterviewStatus)
-	@Column({
-		type: "enum",
-		enum: InterviewStatus,
-		enumName: "interview_status",
-		default: InterviewStatus.PENDING,
-	})
-	status: InterviewStatus;
-
-	@Field({ nullable: true })
-	@Column({ type: "timestamp", nullable: true })
-	scheduledDate?: Date;
-
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	feedback?: string;
-
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	score?: number;
-
 	@Field()
 	@CreateDateColumn()
 	createdAt: Date;
 
 	@Field()
+	@Column()
+	createdBy: string;
+
+	@Field()
 	@UpdateDateColumn()
 	updatedAt: Date;
+
+	@Field()
+	@Column()
+	updatedBy: string;
 }

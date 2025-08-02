@@ -6,10 +6,9 @@ import { buildSchema } from "type-graphql";
 import {
 	CandidateResolver,
 	CandidateSkillResolver,
-	JobPositionResolver,
+	JobApplicationResolver,
 	InterviewProgressResolver,
 	InterviewStageResolver,
-	SkillResolver,
 } from "./resolvers";
 import { getDataSource } from "./config";
 
@@ -20,10 +19,9 @@ async function bootstrap() {
 		resolvers: [
 			CandidateResolver,
 			CandidateSkillResolver,
-			JobPositionResolver,
+			JobApplicationResolver,
 			InterviewProgressResolver,
 			InterviewStageResolver,
-			SkillResolver,
 		],
 		container: { get: (cls) => new cls(dataSource) },
 		validate: false,

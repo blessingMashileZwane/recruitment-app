@@ -68,6 +68,7 @@ async function migrate(direction: "up" | "down") {
 		// Run migrations in a transaction
 		await client.query("BEGIN");
 		try {
+			console.log({ sql });
 			await client.query(sql);
 			await client.query("COMMIT");
 			console.log(`Migration ${direction} completed successfully`);
