@@ -3,14 +3,28 @@ import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 
-import { CandidateResolver } from "./resolvers/CandidateResolver";
+import {
+	CandidateResolver,
+	CandidateSkillResolver,
+	JobPositionResolver,
+	InterviewProgressResolver,
+	InterviewStageResolver,
+	SkillResolver,
+} from "./resolvers";
 import { getDataSource } from "./config";
 
 async function bootstrap() {
 	const dataSource = await getDataSource();
 
 	const schema = await buildSchema({
-		resolvers: [CandidateResolver],
+		resolvers: [
+			CandidateResolver,
+			CandidateSkillResolver,
+			JobPositionResolver,
+			InterviewProgressResolver,
+			InterviewStageResolver,
+			SkillResolver,
+		],
 		container: { get: (cls) => new cls(dataSource) },
 		validate: false,
 	});

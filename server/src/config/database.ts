@@ -36,7 +36,8 @@ export async function getDataSource() {
 			JobPositionHistoryEntity,
 			InterviewStageHistoryEntity,
 		],
-		synchronize: true,
+		synchronize: false, // Disable auto-sync to prevent schema changes
+		logging: ["error", "schema"], // Only log errors and schema changes
 	});
 
 	await AppDataSource.initialize();

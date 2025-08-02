@@ -14,7 +14,7 @@ import { InterviewProgressHistoryEntity } from "./interviewProgressHistory.entit
 import { JobPositionEntity } from "./jobPosition.entity";
 import { InterviewStageEntity } from "./interviewStage.entity";
 
-enum InterviewStatus {
+export enum InterviewStatus {
 	SCHEDULED = "scheduled",
 	COMPLETED = "completed",
 	CANCELLED = "cancelled",
@@ -71,6 +71,7 @@ export class InterviewProgressEntity {
 	@Column({
 		type: "enum",
 		enum: InterviewStatus,
+		enumName: "interview_status",
 		default: InterviewStatus.PENDING,
 	})
 	status: InterviewStatus;
