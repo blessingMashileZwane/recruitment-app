@@ -16,9 +16,11 @@ export const permissions = shield({
 	Query: {
 		// me: isAuthenticated,
 		// adminData: isAdmin,
+		"*": rule()(() => true), // Allow all queries by default
 	},
 	Mutation: {
-		createCandidate: and(isAuthenticated, isUser),
-		deleteCandidate: isAdmin,
+		"*": rule()(() => true), // Allow all mutations by default
+		// createCandidate: and(isAuthenticated, isUser),
+		// deleteCandidate: isAdmin,
 	},
 });
