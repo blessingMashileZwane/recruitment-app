@@ -20,6 +20,17 @@ export class InterviewStageResolver {
 		return repository.findOne({ where: { id } });
 	}
 
+	@Query(() => [InterviewStageEntity], { nullable: true })
+	async interviewStagesByCandidateId(
+		@Arg("candidateId", () => ID) candidateId: string
+	): Promise<InterviewStageEntity[] | null> {
+		const repository = this.dataSource.getRepository(InterviewStageEntity);
+		return repository.find({
+			where: { interviewProgress: { candidateId } },
+			relations: ["interviewProgress"],
+		});
+	}
+
 	@Mutation(() => InterviewStageEntity)
 	async createInterviewStage(
 		@Arg("name") name: string,
@@ -40,6 +51,26 @@ export class InterviewStageResolver {
 	): Promise<InterviewStageEntity> {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
 		const stage = await repository.findOneOrFail({ where: { id } });
+
+		if (name) stage.name = name;
+		if (feedback !== undefined) stage.feedback = feedback;
+		if (description !== undefined) stage.description = description;
+
+		return repository.save(stage);
+	}
+
+	@Mutation(() => InterviewStageEntity)
+	async updateInterviewStageByCandidateId(
+		@Arg("candidateId", () => ID) candidateId: string,
+		@Arg("name", { nullable: true }) name?: string,
+		@Arg("feedback", { nullable: true }) feedback?: string,
+		@Arg("description", { nullable: true }) description?: string
+	): Promise<InterviewStageEntity> {
+		const repository = this.dataSource.getRepository(InterviewStageEntity);
+		const stage = await repository.findOneOrFail({
+			where: { interviewProgress: { candidateId } },
+			relations: ["interviewProgress"],
+		});
 
 		if (name) stage.name = name;
 		if (feedback !== undefined) stage.feedback = feedback;

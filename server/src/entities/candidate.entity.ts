@@ -5,6 +5,8 @@ import {
 	CreateDateColumn,
 	UpdateDateColumn,
 	OneToMany,
+	ManyToMany,
+	ManyToOne,
 } from "typeorm";
 import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
 import { InterviewProgressEntity } from "./interviewProgress.entity";
@@ -60,15 +62,15 @@ export class CandidateEntity {
 	@Column({ nullable: true })
 	resumeUrl?: string;
 
-	@Field(() => [CandidateSkillEntity])
+	@Field(() => CandidateSkillEntity)
 	@OneToMany(
 		() => CandidateSkillEntity,
 		(candidateSkill) => candidateSkill.candidate
 	)
-	candidateSkills: CandidateSkillEntity[];
+	candidateSkills: CandidateSkillEntity;
 
-	@OneToMany(() => InterviewProgressEntity, (progress) => progress.candidate)
-	interviewProgress: InterviewProgressEntity[];
+	@ManyToOne(() => InterviewProgressEntity, (progress) => progress.candidate)
+	interviewProgress: InterviewProgressEntity;
 
 	@OneToMany(() => CandidateHistoryEntity, (history) => history.candidate)
 	history: CandidateHistoryEntity[];

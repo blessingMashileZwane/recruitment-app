@@ -56,10 +56,10 @@ export class InterviewProgressEntity {
 	@JoinColumn({ name: "job_application_id" })
 	jobApplication: JobApplicationEntity;
 
-	@Field(() => InterviewStageEntity)
-	@ManyToOne(() => InterviewStageEntity, (stage) => stage.interviewProgress)
+	@Field(() => [InterviewStageEntity])
+	@OneToMany(() => InterviewStageEntity, (stage) => stage.interviewProgress)
 	@JoinColumn({ name: "stage_id" })
-	stage: InterviewStageEntity;
+	stage: InterviewStageEntity[];
 
 	@Field(() => [InterviewProgressHistoryEntity])
 	@OneToMany(

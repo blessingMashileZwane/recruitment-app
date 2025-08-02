@@ -62,6 +62,26 @@ export class CandidateSkillResolver {
 		return repository.save(candidateSkill);
 	}
 
+	@Mutation(() => CandidateSkillEntity)
+	async updateCandidateSkillByCandidateId(
+		@Arg("candidateId", () => ID) candidateId: string,
+		@Arg("yearsOfExperience", { nullable: true }) yearsOfExperience?: number,
+		@Arg("proficiencyLevel", { nullable: true }) proficiencyLevel?: number
+	): Promise<CandidateSkillEntity> {
+		const repository = this.dataSource.getRepository(CandidateSkillEntity);
+		const candidateSkill = await repository.findOneOrFail({
+			where: { candidateId },
+			relations: ["candidate", "skill"],
+		});
+
+		if (yearsOfExperience !== undefined)
+			candidateSkill.yearsOfExperience = yearsOfExperience;
+		if (proficiencyLevel !== undefined)
+			candidateSkill.proficiencyLevel = proficiencyLevel;
+
+		return repository.save(candidateSkill);
+	}
+
 	@Mutation(() => Boolean)
 	async deleteCandidateSkill(
 		@Arg("id", () => ID) id: string

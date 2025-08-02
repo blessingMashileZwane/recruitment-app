@@ -5,6 +5,7 @@ import {
 	CreateDateColumn,
 	OneToMany,
 	UpdateDateColumn,
+	ManyToOne,
 } from "typeorm";
 import { Field, ID, ObjectType } from "type-graphql";
 import { InterviewProgressEntity } from "./interviewProgress.entity";
@@ -29,9 +30,9 @@ export class InterviewStageEntity {
 	@Column()
 	feedback: string;
 
-	@Field(() => [InterviewProgressEntity])
-	@OneToMany(() => InterviewProgressEntity, (progress) => progress.stage)
-	interviewProgress: InterviewProgressEntity[];
+	@Field(() => InterviewProgressEntity)
+	@ManyToOne(() => InterviewProgressEntity, (progress) => progress.stage)
+	interviewProgress: InterviewProgressEntity;
 
 	@Field(() => [InterviewStageHistoryEntity])
 	@OneToMany(() => InterviewStageHistoryEntity, (history) => history.stage)

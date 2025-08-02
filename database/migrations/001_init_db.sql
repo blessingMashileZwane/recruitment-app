@@ -61,6 +61,7 @@ CREATE TABLE job_application (
 -- Create JobApplication history table
 CREATE TABLE job_application_history (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    candidate_id UUID REFERENCES candidate(id),
     job_application_id UUID REFERENCES job_application(id),
     action VARCHAR(50) NOT NULL,
     title VARCHAR(255) NOT NULL,

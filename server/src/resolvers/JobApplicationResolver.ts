@@ -20,6 +20,17 @@ export class JobApplicationResolver {
 		return repository.findOne({ where: { id } });
 	}
 
+	@Query(() => JobApplicationEntity, { nullable: true })
+	async jobApplicationByCandidateId(
+		@Arg("candidateId", () => ID) candidateId: string
+	): Promise<JobApplicationEntity | null> {
+		const repository = this.dataSource.getRepository(JobApplicationEntity);
+		return repository.findOne({
+			where: { interviewProgress: { candidateId } },
+			relations: ["interviewProgress"],
+		});
+	}
+
 	@Mutation(() => JobApplicationEntity)
 	async createJobApplication(
 		@Arg("title") title: string,
@@ -47,6 +58,28 @@ export class JobApplicationResolver {
 	): Promise<JobApplicationEntity> {
 		const repository = this.dataSource.getRepository(JobApplicationEntity);
 		const application = await repository.findOneOrFail({ where: { id } });
+
+		if (title) application.title = title;
+		if (description !== undefined) application.description = description;
+		if (requirements !== undefined) application.requirements = requirements;
+		if (isActive !== undefined) application.isActive = isActive;
+
+		return repository.save(application);
+	}
+
+	@Mutation(() => JobApplicationEntity)
+	async updateJobApplicationByCandidateId(
+		@Arg("candidateId", () => ID) candidateId: string,
+		@Arg("title", { nullable: true }) title?: string,
+		@Arg("description", { nullable: true }) description?: string,
+		@Arg("requirements", { nullable: true }) requirements?: string,
+		@Arg("isActive", { nullable: true }) isActive?: boolean
+	): Promise<JobApplicationEntity> {
+		const repository = this.dataSource.getRepository(JobApplicationEntity);
+		const application = await repository.findOneOrFail({
+			where: { interviewProgress: { candidateId } },
+			relations: ["interviewProgress"],
+		});
 
 		if (title) application.title = title;
 		if (description !== undefined) application.description = description;

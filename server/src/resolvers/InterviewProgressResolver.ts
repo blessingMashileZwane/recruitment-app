@@ -26,6 +26,17 @@ export class InterviewProgressResolver {
 		});
 	}
 
+	@Query(() => [InterviewProgressEntity])
+	async interviewProgressByCandidate(
+		@Arg("candidateId", () => ID) candidateId: string
+	): Promise<InterviewProgressEntity[]> {
+		const repository = this.dataSource.getRepository(InterviewProgressEntity);
+		return repository.find({
+			where: { candidateId },
+			relations: ["candidate", "jobApplication", "stage"],
+		});
+	}
+
 	@Mutation(() => InterviewProgressEntity)
 	async createInterviewProgress(
 		@Arg("candidateId", () => ID) candidateId: string,
@@ -52,6 +63,26 @@ export class InterviewProgressResolver {
 	): Promise<InterviewProgressEntity> {
 		const repository = this.dataSource.getRepository(InterviewProgressEntity);
 		const progress = await repository.findOneOrFail({ where: { id } });
+
+		if (stageId) progress.stageId = stageId;
+		if (status) progress.status = status;
+
+		return repository.save(progress);
+	}
+
+	@Mutation(() => InterviewProgressEntity)
+	async updateInterviewProgressByCandidateId(
+		@Arg("candidateId", () => ID) candidateId: string,
+		@Arg("jobApplicationId", () => ID) jobApplicationId: string,
+		@Arg("stageId", () => ID, { nullable: true }) stageId?: string,
+		@Arg("status", () => InterviewStatus, { nullable: true })
+		status?: InterviewStatus
+	): Promise<InterviewProgressEntity> {
+		const repository = this.dataSource.getRepository(InterviewProgressEntity);
+		const progress = await repository.findOneOrFail({
+			where: { candidateId, jobApplicationId },
+			relations: ["candidate", "jobApplication", "stage"],
+		});
 
 		if (stageId) progress.stageId = stageId;
 		if (status) progress.status = status;
