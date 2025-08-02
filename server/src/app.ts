@@ -1,3 +1,4 @@
+import { permissions } from "./shields/permissions";
 import "reflect-metadata";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
@@ -11,7 +12,8 @@ import {
 	InterviewStageResolver,
 } from "./resolvers";
 import { getDataSource } from "./config";
-import { contextMiddleware } from "./middleware";
+import { buildContext, contextMiddleware } from "./middleware";
+import { applyMiddleware } from "graphql-middleware";
 
 async function bootstrap() {
 	const dataSource = await getDataSource();
@@ -28,8 +30,11 @@ async function bootstrap() {
 		validate: false,
 	});
 
+	const permissionsSchema = applyMiddleware(schema, permissions);
+
 	const server = new ApolloServer({
-		schema,
+		schema: permissionsSchema,
+		context: buildContext,
 	});
 
 	const app = express();
