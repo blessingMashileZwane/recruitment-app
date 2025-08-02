@@ -56,7 +56,7 @@ export class CandidateSkillEntity {
 	createdAt: Date;
 
 	@Field()
-	@Column()
+	@Column({ nullable: true })
 	createdBy: string;
 
 	@Field()
@@ -64,6 +64,6 @@ export class CandidateSkillEntity {
 	updatedAt: Date;
 
 	@Field()
-	@Column()
+	@Column({ nullable: true })
 	updatedBy: string;
 }

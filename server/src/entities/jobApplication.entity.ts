@@ -70,7 +70,7 @@ export class JobApplicationEntity {
 	createdAt: Date;
 
 	@Field()
-	@Column()
+	@Column({ nullable: true })
 	createdBy: String;
 
 	@Field()
@@ -78,6 +78,6 @@ export class JobApplicationEntity {
 	updatedAt: Date;
 
 	@Field()
-	@Column()
+	@Column({ nullable: true })
 	updatedBy: String;
 }

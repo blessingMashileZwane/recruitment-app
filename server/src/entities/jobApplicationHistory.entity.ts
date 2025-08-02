@@ -59,9 +59,10 @@ export class JobApplicationHistoryEntity {
 	jobApplication: JobApplicationEntity;
 
 	@CreateDateColumn()
+	@Field()
 	createdAt: Date;
 
 	@Field()
-	@Column()
+	@Column({ nullable: true })
 	createdBy: String;
 }

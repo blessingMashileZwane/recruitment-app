@@ -53,6 +53,6 @@ export class CandidateSkillHistoryEntity {
 	createdAt: Date;
 
 	@Field()
-	@Column()
+	@Column({ nullable: true })
 	createdBy: string;
 }

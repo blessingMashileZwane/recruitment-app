@@ -11,6 +11,7 @@ import {
 	JobApplicationHistoryEntity,
 	InterviewStageHistoryEntity,
 } from "../entities";
+import { AuditSubscriber } from "../subscribers";
 
 export async function getDataSource() {
 	const AppDataSource = new DataSource({
@@ -32,6 +33,7 @@ export async function getDataSource() {
 			JobApplicationHistoryEntity,
 			InterviewStageHistoryEntity,
 		],
+		subscribers: [AuditSubscriber],
 		synchronize: true,
 		dropSchema: true, // This will drop the schema each time to ensure clean sync
 		logging: true, // This will show us what SQL is being executed

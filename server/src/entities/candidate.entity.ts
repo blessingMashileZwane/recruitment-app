@@ -73,11 +73,12 @@ export class CandidateEntity {
 	@OneToMany(() => CandidateHistoryEntity, (history) => history.candidate)
 	history: CandidateHistoryEntity[];
 
+	@Field()
 	@CreateDateColumn()
 	createdAt: Date;
 
 	@Field()
-	@Column()
+	@Column({ nullable: true })
 	createdBy: String;
 
 	@Field()
@@ -85,6 +86,6 @@ export class CandidateEntity {
 	updatedAt: Date;
 
 	@Field()
-	@Column()
+	@Column({ nullable: true })
 	updatedBy: String;
 }

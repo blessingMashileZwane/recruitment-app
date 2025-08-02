@@ -66,9 +66,11 @@ export class CandidateHistoryEntity {
 	@JoinColumn({ name: "candidate_id" })
 	candidate: CandidateEntity;
 
+	@Field()
 	@CreateDateColumn()
 	createdAt: Date;
 
-	@Column()
+	@Field()
+	@Column({ nullable: true })
 	createdBy: String;
 }

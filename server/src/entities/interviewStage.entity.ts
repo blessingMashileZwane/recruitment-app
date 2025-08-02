@@ -42,7 +42,7 @@ export class InterviewStageEntity {
 	createdAt: Date;
 
 	@Field()
-	@Column()
+	@Column({ nullable: true })
 	createdBy: string;
 
 	@Field()
@@ -50,6 +50,6 @@ export class InterviewStageEntity {
 	updatedAt: Date;
 
 	@Field()
-	@Column()
+	@Column({ nullable: true })
 	updatedBy: string;
 }

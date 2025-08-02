@@ -11,6 +11,7 @@ import {
 	InterviewStageResolver,
 } from "./resolvers";
 import { getDataSource } from "./config";
+import { contextMiddleware } from "./middleware";
 
 async function bootstrap() {
 	const dataSource = await getDataSource();
@@ -36,6 +37,7 @@ async function bootstrap() {
 	await server.start();
 
 	app.use(express.json());
+	app.use(contextMiddleware);
 
 	await new Promise<void>((resolve) => {
 		server.applyMiddleware({

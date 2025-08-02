@@ -65,6 +65,6 @@ export class InterviewProgressHistoryEntity {
 	createdAt: Date;
 
 	@Field()
-	@Column()
+	@Column({ nullable: true })
 	createdBy: string;
 }

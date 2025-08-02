@@ -73,7 +73,7 @@ export class InterviewProgressEntity {
 	createdAt: Date;
 
 	@Field()
-	@Column()
+	@Column({ nullable: true })
 	createdBy: string;
 
 	@Field()
@@ -81,6 +81,6 @@ export class InterviewProgressEntity {
 	updatedAt: Date;
 
 	@Field()
-	@Column()
+	@Column({ nullable: true })
 	updatedBy: string;
 }
