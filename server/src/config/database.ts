@@ -35,8 +35,8 @@ export async function getDataSource() {
 		],
 		subscribers: [AuditSubscriber],
 		synchronize: true,
-		dropSchema: true, // This will drop the schema each time to ensure clean sync
-		logging: true, // This will show us what SQL is being executed
+		dropSchema: false,
+		logging: true,
 	});
 
 	await AppDataSource.initialize();
