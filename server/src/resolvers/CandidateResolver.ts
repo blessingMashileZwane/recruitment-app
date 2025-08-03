@@ -8,9 +8,39 @@ export class CandidateResolver {
 	constructor(private dataSource: DataSource) {}
 
 	@Query(() => [CandidateEntity])
-	async candidates(): Promise<CandidateEntity[]> {
+	async candidates(
+		@Arg("status", () => CandidateStatus, { nullable: true })
+		status?: CandidateStatus,
+		@Arg("searchTerm", { nullable: true }) searchTerm?: string,
+		@Arg("sortBy", { nullable: true }) sortBy?: string,
+		@Arg("sortOrder", { nullable: true }) sortOrder?: "ASC" | "DESC"
+	): Promise<CandidateEntity[]> {
+		let query = this.dataSource
+			.getRepository(CandidateEntity)
+			.createQueryBuilder("candidate");
+		if (status) {
+			query = query.andWhere("candidate.status = :status", { status });
+		}
+		if (searchTerm) {
+			query = query.andWhere(
+				"candidate.firstName LIKE :searchTerm OR candidate.lastName LIKE :searchTerm OR candidate.email LIKE :searchTerm",
+				{ searchTerm: `%${searchTerm}%` }
+			);
+		}
+		if (sortBy) {
+			query = query.orderBy(`candidate.${sortBy}`, sortOrder || "ASC");
+		}
+		return query.getMany();
+	}
+
+	@Query(() => [CandidateEntity])
+	async candidatesWithPagination(
+		@Arg("page", () => ID, { defaultValue: 1 }) page: number,
+		@Arg("limit", () => ID, { defaultValue: 10 }) limit: number
+	): Promise<CandidateEntity[]> {
 		const repository = this.dataSource.getRepository(CandidateEntity);
-		return repository.find();
+		const skip = (page - 1) * limit;
+		return repository.find({ skip, take: limit });
 	}
 
 	@Query(() => CandidateEntity, { nullable: true })
