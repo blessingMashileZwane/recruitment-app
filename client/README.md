@@ -1,53 +1,69 @@
-# README for Client Application
+# React + TypeScript + Vite
 
-This is the client application for the Recruitment App, built using React and Vite. 
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Getting Started
+Currently, two official plugins are available:
 
-To get started with the client application, follow these steps:
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-1. **Clone the repository**:
-   ```bash
-   git clone <repository-url>
-   cd recruitment-app/client
-   ```
+## Expanding the ESLint configuration
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-3. **Run the development server**:
-   ```bash
-   npm run dev
-   ```
+```js
+export default tseslint.config([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
 
-4. **Open your browser**:
-   Navigate to `http://localhost:3000` to view the application.
+      // Remove tseslint.configs.recommended and replace with this
+      ...tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      ...tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      ...tseslint.configs.stylisticTypeChecked,
 
-## Build
-
-To create a production build of the application, run:
-```bash
-npm run build
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-## Docker
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-To build and run the client application using Docker, use the following command:
-```bash
-docker build -t recruitment-app-client .
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default tseslint.config([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-
-Then, you can run the container:
-```bash
-docker run -p 3000:3000 recruitment-app-client
-```
-
-## Contributing
-
-If you would like to contribute to this project, please fork the repository and submit a pull request.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
