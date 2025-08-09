@@ -6,6 +6,29 @@ interface PaginatedCandidates {
 	totalPages: number;
 }
 
+const allSkills = ["React", "TypeScript", "Node.js", "GraphQL", "TailwindCSS"];
+const allowedStatuses: Candidate["status"][] = [
+	"screening",
+	"technical",
+	"final",
+	"hired",
+	"rejected",
+];
+
+const mockCandidates: Candidate[] = Array.from({ length: 50 }, (_, i) => ({
+	id: `${i + 1}`,
+	name: `Candidate ${i + 1}`,
+	email: `candidate${i + 1}@example.com`,
+	position: i % 2 === 0 ? "Frontend Developer" : "Backend Developer",
+	experience: Math.floor(Math.random() * 10) + 1,
+	skills: [
+		allSkills[i % allSkills.length],
+		allSkills[(i + 1) % allSkills.length],
+	],
+	status: allowedStatuses[i % allowedStatuses.length], // ✅ type-safe
+	addedDate: new Date(Date.now() - i * 86400000).toISOString(),
+}));
+
 export const mockGraphQL = {
 	authenticate: async (
 		email: string,
@@ -196,6 +219,78 @@ export const mockGraphQL = {
 			...candidate,
 			id: Date.now().toString(),
 			addedDate: new Date().toISOString().split("T")[0],
+		};
+	},
+
+	getCandidatesList: async ({
+		page,
+		limit,
+		search,
+		status,
+		position,
+		sortBy,
+		sortOrder,
+	}: {
+		page: number;
+		limit: number;
+		search?: string;
+		status?: string;
+		position?: string;
+		sortBy: "name" | "position" | "experience" | "addedDate";
+		sortOrder: "asc" | "desc";
+	}): Promise<{
+		candidates: Candidate[];
+		total: number;
+		totalPages: number;
+	}> => {
+		await new Promise((resolve) => setTimeout(resolve, 300)); // simulate network delay
+
+		let filtered = [...mockCandidates];
+
+		// Search filter
+		if (search) {
+			filtered = filtered.filter((c) =>
+				c.name.toLowerCase().includes(search.toLowerCase())
+			);
+		}
+
+		// Status filter
+		if (status) {
+			filtered = filtered.filter((c) => c.status === status);
+		}
+
+		// Position filter
+		if (position) {
+			filtered = filtered.filter((c) => c.position === position);
+		}
+
+		// Sorting
+		filtered.sort((a, b) => {
+			const fieldA = a[sortBy];
+			const fieldB = b[sortBy];
+
+			if (typeof fieldA === "string" && typeof fieldB === "string") {
+				return sortOrder === "asc"
+					? fieldA.localeCompare(fieldB)
+					: fieldB.localeCompare(fieldA);
+			} else if (typeof fieldA === "number" && typeof fieldB === "number") {
+				return sortOrder === "asc" ? fieldA - fieldB : fieldB - fieldA;
+			} else {
+				return 0;
+			}
+		});
+
+		// Pagination
+		const total = filtered.length;
+		const totalPages = Math.ceil(total / limit);
+		const start = (page - 1) * limit;
+		const end = start + limit;
+		const paginated = filtered.slice(start, end);
+
+		return {
+			candidates: paginated,
+			total,
+			totalPages,
 		};
 	},
 };
