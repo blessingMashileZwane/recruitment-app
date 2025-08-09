@@ -1,55 +1,25 @@
 import { LogOut, User, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './App.css';
 import { useAuth } from './auth/AuthProvider';
-import CandidateForm from './components/CandidateForm';
+import CandidateDetails from './components/CandidateDetails';
 import CandidatesList from './components/CandidatesList';
 import FeedbackHistory from './components/FeedbackHistory';
 import Login from './components/Login';
-import { mockGraphQL } from './mock/mockData';
-import type { Candidate } from './types';
+import FeedbackForm from './components/FeedbackForm';
+import CandidateForm from './components/CandidateForm';
+
+type ViewState =
+  | { view: "candidates" }
+  | { view: "add-candidate" }
+  | { view: "candidate-details"; candidateId: string }
+  | { view: "feedback-history"; candidateId: string }
+  | { view: "add-feedback"; candidateId: string };
 
 function App() {
   const { user, isLoggedIn, logout } = useAuth();
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [currentView, setCurrentView] = useState<
-    "candidates" | "add-candidate" | "candidate-detail" | "feedback"
-  >("feedback");
-  const [loading, setLoading] = useState(false);
-
-  const [feedbackForm, setFeedbackForm] = useState({
-    candidateId: "",
-    interviewerName: user?.name || "",
-    interviewStep: "",
-    rating: 3,
-    comments: "",
-    nextStepNotes: "",
-  });
-
-  const loadCandidates = async () => {
-    setLoading(true);
-    try {
-      const data = await mockGraphQL.getCandidates();
-      console.log("Loaded candidates:", data);
-      setCandidates(data);
-    } catch (error) {
-      console.error("Failed to load candidates:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isLoggedIn && candidates.length === 0) {
-      loadCandidates();
-    }
-  }, [isLoggedIn]);
-
-  useEffect(() => {
-    if (user) {
-      setFeedbackForm((prev) => ({ ...prev, interviewerName: user.name }));
-    }
-  }, [user]);
+  const [currentView, setCurrentView] = useState<ViewState>({ view: "candidates" });
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
 
   if (!isLoggedIn) {
     return <Login />;
@@ -69,8 +39,8 @@ function App() {
 
             <nav className="flex space-x-4">
               <button
-                onClick={() => setCurrentView("candidates")}
-                className={`px-3 py-2 rounded-md text-sm font-medium ${currentView === "candidates"
+                onClick={() => setCurrentView({ view: "candidates" })}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${currentView.view === "candidates"
                   ? "bg-blue-100 text-blue-700"
                   : "text-gray-500 hover:text-gray-700"
                   }`}
@@ -78,8 +48,8 @@ function App() {
                 Candidates
               </button>
               <button
-                onClick={() => setCurrentView("add-candidate")}
-                className={`px-3 py-2 rounded-md text-sm font-medium ${currentView === "add-candidate"
+                onClick={() => { setCurrentView({ view: "add-candidate" }); console.log("Add Candidate clicked") }}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${currentView.view === "add-candidate"
                   ? "bg-blue-100 text-blue-700"
                   : "text-gray-500 hover:text-gray-700"
                   }`}
@@ -105,22 +75,88 @@ function App() {
             </div>
           </div>
         </div>
-      </header>
+      </header >
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {loading && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 flex items-center space-x-3">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-              <span>Loading...</span>
-            </div>
-          </div>
-        )}
-        {currentView === "candidates" && <CandidatesList currentCandidates={candidates} />}
-        {currentView === "add-candidate" && <CandidateForm />}
-        {currentView === "feedback" && <FeedbackHistory />}
+        {(() => {
+          switch (currentView.view) {
+            case "candidates":
+              return <CandidatesList onViewDetails={(id) => {
+                setSelectedCandidateId(id);
+                setCurrentView({ view: 'candidate-details', candidateId: id });
+              }}
+                onViewFeedback={(id) => {
+                  setSelectedCandidateId(id);
+                  setCurrentView({ view: 'feedback-history', candidateId: id });
+                }} />;
+
+            case "add-candidate":
+              return <CandidateForm />
+
+            case "candidate-details":
+              if (!selectedCandidateId) {
+                setCurrentView({ view: "candidates" });
+                return null; // render nothing this frame
+              }
+              return (
+                <CandidateDetails
+                  candidateId={selectedCandidateId}
+                  onBack={() => setCurrentView({ view: "candidates" })}
+                  onViewFeedback={(id) => {
+                    setSelectedCandidateId(id);
+                    setCurrentView({ view: "feedback-history", candidateId: id });
+                  }}
+                />
+              );
+
+            case "feedback-history":
+              if (!selectedCandidateId) {
+                setCurrentView({ view: "candidates" });
+                return null;
+              }
+              return (
+                <FeedbackHistory
+                  candidateId={selectedCandidateId}
+                  onAddFeedback={(id) => {
+                    setSelectedCandidateId(id);
+                    setCurrentView({
+                      view: "add-feedback",
+                      candidateId: selectedCandidateId,
+                    })
+                  }}
+                  onBack={() =>
+                    setCurrentView({
+                      view: "candidate-details",
+                      candidateId: selectedCandidateId,
+                    })
+                  }
+                />
+              );
+
+            case "add-feedback":
+              if (!selectedCandidateId) {
+                setCurrentView({ view: "candidates" });
+                return null;
+              }
+              return <FeedbackForm onViewFeedback={(id) => {
+                setSelectedCandidateId(id);
+                setCurrentView({ view: "feedback-history", candidateId: id });
+              }}
+                candidateId={selectedCandidateId} />
+
+            default:
+              return <CandidatesList onViewDetails={(id) => {
+                setSelectedCandidateId(id);
+                setCurrentView({ view: 'candidate-details', candidateId: id });
+              }}
+                onViewFeedback={(id) => {
+                  setSelectedCandidateId(id);
+                  setCurrentView({ view: 'feedback-history', candidateId: id });
+                }} />;
+          }
+        })()}
       </main>
-    </div>
+    </div >
   )
 }
 

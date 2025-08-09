@@ -1,5 +1,11 @@
 import type { Candidate, Feedback, User } from "../types";
 
+interface PaginatedCandidates {
+	candidates: Candidate[];
+	total: number;
+	totalPages: number;
+}
+
 export const mockGraphQL = {
 	authenticate: async (
 		email: string,
@@ -28,15 +34,29 @@ export const mockGraphQL = {
 		};
 	},
 
-	getCandidates: async (): Promise<Candidate[]> => {
+	getCandidateById: async (id: string): Promise<Candidate> => {
 		await new Promise((resolve) => setTimeout(resolve, 500));
-		return [
+		return {
+			id: "1",
+			name: "John Doe",
+			email: "john@example.com",
+			position: "Frontend Developer",
+			status: "technical" as const,
+			experience: 3,
+			skills: ["React", "TypeScript", "CSS"],
+			addedDate: "2024-01-15",
+		};
+	},
+
+	getCandidates: async (): Promise<PaginatedCandidates> => {
+		await new Promise((resolve) => setTimeout(resolve, 500));
+		const candidates = [
 			{
 				id: "1",
 				name: "John Doe",
 				email: "john@example.com",
 				position: "Frontend Developer",
-				status: "technical",
+				status: "technical" as const,
 				experience: 3,
 				skills: ["React", "TypeScript", "CSS"],
 				addedDate: "2024-01-15",
@@ -46,12 +66,59 @@ export const mockGraphQL = {
 				name: "Jane Smith",
 				email: "jane@example.com",
 				position: "Backend Developer",
-				status: "screening",
+				status: "screening" as const,
 				experience: 5,
 				skills: ["Node.js", "Python", "PostgreSQL"],
 				addedDate: "2024-01-16",
 			},
+			{
+				id: "3",
+				name: "Alice Johnson",
+				email: "alice@example.com",
+				position: "Full Stack Developer",
+				status: "final" as const,
+				experience: 4,
+				skills: ["React", "Node.js", "MongoDB"],
+				addedDate: "2024-01-17",
+			},
+			{
+				id: "4",
+				name: "Bob Wilson",
+				email: "bob@example.com",
+				position: "DevOps Engineer",
+				status: "hired" as const,
+				experience: 6,
+				skills: ["AWS", "Docker", "Kubernetes"],
+				addedDate: "2024-01-18",
+			},
+			{
+				id: "5",
+				name: "Carol Brown",
+				email: "carol@example.com",
+				position: "UI/UX Designer",
+				status: "rejected" as const,
+				experience: 2,
+				skills: ["Figma", "Sketch", "Adobe XD"],
+				addedDate: "2024-01-19",
+			},
+			{
+				id: "6",
+				name: "David Lee",
+				email: "david@example.com",
+				position: "Data Scientist",
+				status: "screening" as const,
+				experience: 7,
+				skills: ["Python", "Machine Learning", "SQL"],
+				addedDate: "2024-01-20",
+			},
 		];
+		const total = candidates.length;
+		const totalPages = Math.ceil(total / 10);
+		return {
+			candidates,
+			total,
+			totalPages,
+		};
 	},
 
 	addCandidate: async (

@@ -1,13 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { mockGraphQL } from "../mock/mockData";
 import type { Candidate } from "../types";
 
-function CandidateDetails() {
-    const [currentView, setCurrentView] = useState<
-        "candidates" | "add-candidate" | "candidate-detail" | "feedback"
-    >("candidates");
+type CandidateDetails = {
+    candidateId: string;
+    onBack: () => void;
+    onViewFeedback: (id: string) => void;
+}
+
+function CandidateDetails({ candidateId, onBack, onViewFeedback }: CandidateDetails) {
     const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
         null
     );
+
+    useEffect(() => {
+        const loadCandidateDetails = async () => {
+            try {
+                const candidate = await mockGraphQL.getCandidateById(candidateId);
+                setSelectedCandidate(candidate);
+            } catch (error) {
+                console.error("Failed to load candidate details:", error);
+            }
+        };
+
+        loadCandidateDetails();
+    }, [candidateId]);
 
     const getStatusColor = (status: Candidate["status"]) => {
         const colors = {
@@ -24,13 +41,20 @@ function CandidateDetails() {
         <div>
             <div className="mb-6">
                 <button
-                    onClick={() => setCurrentView('candidates')}
+                    onClick={onBack}
                     className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-4"
                 >
                     ← Back to candidates
                 </button>
                 <h2 className="text-2xl font-bold text-gray-900">{selectedCandidate?.name}</h2>
             </div>
+
+            <button
+                onClick={() => selectedCandidate && onViewFeedback(selectedCandidate?.id)}
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-4"
+            >
+                View Feedback
+            </button>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
