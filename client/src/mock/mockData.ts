@@ -37,7 +37,7 @@ export const mockGraphQL = {
 	getCandidateById: async (id: string): Promise<Candidate> => {
 		await new Promise((resolve) => setTimeout(resolve, 500));
 		return {
-			id: "1",
+			id,
 			name: "John Doe",
 			email: "john@example.com",
 			position: "Frontend Developer",
@@ -150,6 +150,22 @@ export const mockGraphQL = {
 		];
 	},
 
+	getFeedbackById: async (feedBackId: string): Promise<Feedback> => {
+		await new Promise((resolve) => setTimeout(resolve, 300));
+		return {
+			id: "1",
+			candidateId: feedBackId,
+			interviewerName: "Alice Johnson",
+			interviewStep: "Technical Interview",
+			rating: 4,
+			comments:
+				"Strong technical skills, good problem-solving approach. Demonstrated solid understanding of React concepts and was able to implement the coding challenge efficiently.",
+			nextStepNotes:
+				"Recommend for final interview. Focus on system design questions and leadership scenarios.",
+			date: "2024-01-20",
+		};
+	},
+
 	addFeedback: async (
 		feedback: Omit<Feedback, "id" | "date">
 	): Promise<Feedback> => {
@@ -158,6 +174,28 @@ export const mockGraphQL = {
 			...feedback,
 			id: Date.now().toString(),
 			date: new Date().toISOString().split("T")[0],
+		};
+	},
+
+	updateFeedback: async (
+		feedback: Omit<Feedback, "id" | "date">
+	): Promise<Feedback> => {
+		await new Promise((resolve) => setTimeout(resolve, 300));
+		return {
+			...feedback,
+			id: Date.now().toString(),
+			date: new Date().toISOString().split("T")[0],
+		};
+	},
+
+	updateCandidate: async (
+		candidate: Omit<Candidate, "id" | "addedDate">
+	): Promise<Candidate> => {
+		await new Promise((resolve) => setTimeout(resolve, 300));
+		return {
+			...candidate,
+			id: Date.now().toString(),
+			addedDate: new Date().toISOString().split("T")[0],
 		};
 	},
 };

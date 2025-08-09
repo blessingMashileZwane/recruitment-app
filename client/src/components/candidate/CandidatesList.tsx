@@ -1,8 +1,8 @@
 import { ChevronLeft, ChevronRight, Eye, MessageSquare, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import type { Candidate } from '../types';
-import { mockGraphQL } from '../mock/mockData';
-import CandidateItem from './ui/CandidateItem';
+import type { Candidate } from '../../types';
+import { mockGraphQL } from '../../mock/mockData';
+import CandidateItem from '../ui/CandidateItem';
 
 type CandidateListProps = {
     onViewDetails: (id: string) => void;

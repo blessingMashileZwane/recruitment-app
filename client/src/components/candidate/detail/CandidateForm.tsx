@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { mockGraphQL } from '../mock/mockData';
-import type { Candidate } from '../types';
-import { FormField } from './ui/FormField';
+import { mockGraphQL } from '../../../mock/mockData';
+import type { Candidate } from '../../../types';
+import { FormField } from '../../ui/FormField';
 function CandidateForm() {
     const [loading, setLoading] = useState(false);
     const [candidateForm, setCandidateForm] = useState({

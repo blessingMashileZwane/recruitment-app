@@ -2,24 +2,29 @@ import { LogOut, User, Users } from 'lucide-react';
 import { useState } from 'react';
 import './App.css';
 import { useAuth } from './auth/AuthProvider';
-import CandidateDetails from './components/CandidateDetails';
-import CandidatesList from './components/CandidatesList';
-import FeedbackHistory from './components/FeedbackHistory';
+import CandidatesList from './components/candidate/CandidatesList';
+import CandidateDetails from './components/candidate/detail/CandidateDetails';
+import CandidateEdit from './components/candidate/detail/CandidateEdit';
+import CandidateForm from './components/candidate/detail/CandidateForm';
+import FeedbackForm from './components/feedback/FeedbackForm';
+import FeedbackHistory from './components/feedback/FeedbackHistory';
 import Login from './components/Login';
-import FeedbackForm from './components/FeedbackForm';
-import CandidateForm from './components/CandidateForm';
+import FeedbackEdit from './components/feedback/FeedbackEdit';
 
 type ViewState =
   | { view: "candidates" }
   | { view: "add-candidate" }
+  | { view: "edit-candidate"; candidateId: string }
   | { view: "candidate-details"; candidateId: string }
   | { view: "feedback-history"; candidateId: string }
-  | { view: "add-feedback"; candidateId: string };
+  | { view: "add-feedback"; candidateId: string }
+  | { view: "edit-feedback"; feedbackId: string };
 
 function App() {
   const { user, isLoggedIn, logout } = useAuth();
   const [currentView, setCurrentView] = useState<ViewState>({ view: "candidates" });
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
+  const [selectedFeedbackId, setSelectedFeedbackId] = useState<string | null>(null);
 
   if (!isLoggedIn) {
     return <Login />;
@@ -40,7 +45,7 @@ function App() {
             <nav className="flex space-x-4">
               <button
                 onClick={() => setCurrentView({ view: "candidates" })}
-                className={`px-3 py-2 rounded-md text-sm font-medium ${currentView.view === "candidates"
+                className={`px-3 py-2 rounded-md text-sm font-medium ${currentView.view !== "add-candidate"
                   ? "bg-blue-100 text-blue-700"
                   : "text-gray-500 hover:text-gray-700"
                   }`}
@@ -48,7 +53,7 @@ function App() {
                 Candidates
               </button>
               <button
-                onClick={() => { setCurrentView({ view: "add-candidate" }); console.log("Add Candidate clicked") }}
+                onClick={() => { setCurrentView({ view: "add-candidate" }) }}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${currentView.view === "add-candidate"
                   ? "bg-blue-100 text-blue-700"
                   : "text-gray-500 hover:text-gray-700"
@@ -93,10 +98,17 @@ function App() {
             case "add-candidate":
               return <CandidateForm />
 
+            case "edit-candidate":
+              return <CandidateEdit candidateId={''} onCancel={(id) => {
+                setCurrentView({ view: 'candidate-details', candidateId: id })
+              }} onSave={(updatedCandidate) => {
+                setCurrentView({ view: 'candidate-details', candidateId: updatedCandidate.id })
+              }} />
+
             case "candidate-details":
               if (!selectedCandidateId) {
                 setCurrentView({ view: "candidates" });
-                return null; // render nothing this frame
+                return null;
               }
               return (
                 <CandidateDetails
@@ -105,6 +117,10 @@ function App() {
                   onViewFeedback={(id) => {
                     setSelectedCandidateId(id);
                     setCurrentView({ view: "feedback-history", candidateId: id });
+                  }}
+                  onViewEdit={(id) => {
+                    setSelectedCandidateId(id);
+                    setCurrentView({ view: "edit-candidate", candidateId: id });
                   }}
                 />
               );
@@ -130,6 +146,14 @@ function App() {
                       candidateId: selectedCandidateId,
                     })
                   }
+                  onEditFeedback={(id) => {
+                    setSelectedFeedbackId(id)
+                    setCurrentView({
+                      view: "edit-feedback",
+                      feedbackId: id,
+                    })
+                  }
+                  }
                 />
               );
 
@@ -143,6 +167,13 @@ function App() {
                 setCurrentView({ view: "feedback-history", candidateId: id });
               }}
                 candidateId={selectedCandidateId} />
+
+            case "edit-feedback":
+              if (!selectedCandidateId || !selectedFeedbackId) {
+                setCurrentView({ view: "candidates" });
+                return null;
+              }
+              return <FeedbackEdit feedbackId={selectedFeedbackId} candidateId={selectedCandidateId} onCancel={() => setCurrentView({ view: 'feedback-history', candidateId: selectedCandidateId })} onSave={() => setCurrentView({ view: 'feedback-history', candidateId: selectedCandidateId })} />
 
             default:
               return <CandidatesList onViewDetails={(id) => {

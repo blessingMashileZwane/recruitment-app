@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { mockGraphQL } from '../mock/mockData';
-import type { Candidate, Feedback } from '../types';
+import { mockGraphQL } from '../../mock/mockData';
+import type { Candidate, Feedback } from '../../types';
 
 type FeedbackFormProps = {
     candidateId: string;
