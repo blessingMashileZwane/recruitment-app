@@ -293,4 +293,29 @@ export const mockGraphQL = {
 			totalPages,
 		};
 	},
+
+	addCandidatesBulk: async (
+		candidates: Candidate[]
+	): Promise<{
+		success: Candidate[];
+		failed: { email: string; reason: string }[];
+	}> => {
+		await new Promise((resolve) => setTimeout(resolve, 500));
+
+		const success: Candidate[] = [];
+		const failed: { email: string; reason: string }[] = [];
+
+		candidates.forEach((c) => {
+			if (!c.email || c.email.includes("fail")) {
+				failed.push({ email: c.email, reason: "Invalid or duplicate email" });
+			} else {
+				success.push(c);
+				// mockDB.candidates.push(c); // optional
+			}
+		});
+
+		console.log("Bulk save mock result:", { success, failed });
+
+		return { success, failed };
+	},
 };
