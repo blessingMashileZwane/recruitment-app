@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { mockGraphQL } from "../../mock/mockData";
+import { graphqlService } from "../../services/graphql.service";
 import type { Candidate, Feedback } from "../../types";
 import FeedbackItem from "../ui/FeedbackItem";
 
@@ -21,8 +21,8 @@ function FeedbackHistory({ candidateId, onBack, onAddFeedback, onEditFeedback }:
         const loadFeedback = async () => {
             setLoading(true);
             try {
-                const feedbackData = await mockGraphQL.getFeedback(candidateId);
-                const candidateData = await mockGraphQL.getCandidateById(candidateId);
+                const feedbackData = await graphqlService.getFeedback(candidateId);
+                const candidateData = await graphqlService.getCandidateById(candidateId);
 
                 setSelectedCandidate(candidateData);
                 setFeedback(feedbackData);

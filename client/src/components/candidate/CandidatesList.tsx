@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { Candidate } from '../../types';
-import { mockGraphQL } from '../../mock/mockData';
+import { graphqlService } from '../../services/graphql.service';
 import CandidateItem from '../ui/CandidateItem';
 
 type CandidateListProps = {
@@ -27,7 +27,7 @@ function CandidateList({ onViewDetails, onViewFeedback }: CandidateListProps) {
     const loadCandidates = async () => {
         setLoading(true);
         try {
-            const { candidates, total, totalPages } = await mockGraphQL.getCandidatesList({
+            const { candidates, total, totalPages } = await graphqlService.getCandidatesList({
                 page: currentPage,
                 limit: itemsPerPage,
                 search: searchTerm.trim() || undefined,

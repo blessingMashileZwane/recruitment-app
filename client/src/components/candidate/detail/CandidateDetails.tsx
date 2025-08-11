@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { mockGraphQL } from "../../../mock/mockData";
+import { graphqlService } from "../../../services/graphql.service";
 import type { Candidate } from "../../../types";
 
 type CandidateDetails = {
@@ -19,7 +19,7 @@ function CandidateDetails({ candidateId, onBack, onViewFeedback, onViewEdit }: C
         const loadCandidateDetails = async () => {
             setLoading(true);
             try {
-                const candidate = await mockGraphQL.getCandidateById(candidateId);
+                const candidate = await graphqlService.getCandidateById(candidateId);
                 setSelectedCandidate(candidate);
             } catch (error) {
                 console.error("Failed to load candidate details:", error);

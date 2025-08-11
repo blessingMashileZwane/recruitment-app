@@ -2,35 +2,68 @@ import { Resolver, Query, Mutation, Arg, ID } from "type-graphql";
 import { CandidateEntity } from "../entities";
 import { DataSource } from "typeorm";
 import { CandidateStatus } from "../types";
+import { CandidateListResponse } from "../types/responses";
 
 @Resolver(() => CandidateEntity)
 export class CandidateResolver {
 	constructor(private dataSource: DataSource) {}
 
-	@Query(() => [CandidateEntity])
+	@Query(() => CandidateListResponse)
 	async candidates(
-		@Arg("status", () => CandidateStatus, { nullable: true })
-		status?: CandidateStatus,
-		@Arg("searchTerm", { nullable: true }) searchTerm?: string,
+		@Arg("page", () => Number, { defaultValue: 1 }) page: number,
+		@Arg("limit", () => Number, { defaultValue: 10 }) limit: number,
+		@Arg("status", () => String, { nullable: true }) status?: string,
+		@Arg("search", { nullable: true }) search?: string,
+		@Arg("position", { nullable: true }) position?: string,
 		@Arg("sortBy", { nullable: true }) sortBy?: string,
-		@Arg("sortOrder", { nullable: true }) sortOrder?: "ASC" | "DESC"
-	): Promise<CandidateEntity[]> {
+		@Arg("sortOrder", { nullable: true }) sortOrder?: string
+	): Promise<{ items: CandidateEntity[]; total: number; totalPages: number }> {
+		const skip = (page - 1) * limit;
+
 		let query = this.dataSource
 			.getRepository(CandidateEntity)
 			.createQueryBuilder("candidate");
+
 		if (status) {
 			query = query.andWhere("candidate.status = :status", { status });
 		}
-		if (searchTerm) {
+
+		if (position) {
+			query = query.andWhere("candidate.position = :position", { position });
+		}
+
+		if (search) {
 			query = query.andWhere(
-				"candidate.firstName LIKE :searchTerm OR candidate.lastName LIKE :searchTerm OR candidate.email LIKE :searchTerm",
-				{ searchTerm: `%${searchTerm}%` }
+				"(candidate.name LIKE :search OR candidate.email LIKE :search)",
+				{ search: `%${search}%` }
 			);
 		}
-		if (sortBy) {
-			query = query.orderBy(`candidate.${sortBy}`, sortOrder || "ASC");
+
+		// Map client-side field names to database column names if needed
+		const fieldMap: Record<string, string> = {
+			name: "name",
+			position: "position",
+			experience: "experience",
+			addedDate: "addedDate",
+		};
+
+		if (sortBy && sortOrder && fieldMap[sortBy]) {
+			const order = sortOrder.toUpperCase() as "ASC" | "DESC";
+			query = query.orderBy(`candidate.${fieldMap[sortBy]}`, order);
 		}
-		return query.getMany();
+
+		const [items, total] = await Promise.all([
+			query.skip(skip).take(limit).getMany(),
+			query.getCount(),
+		]);
+
+		const totalPages = Math.ceil(total / limit);
+
+		return {
+			items,
+			total,
+			totalPages,
+		};
 	}
 
 	@Query(() => [CandidateEntity])
@@ -56,7 +89,13 @@ export class CandidateResolver {
 		@Arg("firstName") firstName: string,
 		@Arg("lastName") lastName: string,
 		@Arg("email") email: string,
-		@Arg("phone", { nullable: true }) phone?: string
+		@Arg("phone", { nullable: true }) phone?: string,
+		@Arg("currentLocation", { nullable: true }) currentLocation?: string,
+		@Arg("citizenship", { nullable: true }) citizenship?: string,
+		@Arg("status", () => CandidateStatus, {
+			defaultValue: CandidateStatus.ACTIVE,
+		})
+		status?: CandidateStatus
 	): Promise<CandidateEntity> {
 		const repository = this.dataSource.getRepository(CandidateEntity);
 		const candidate = repository.create({
@@ -64,7 +103,9 @@ export class CandidateResolver {
 			lastName,
 			email,
 			phone,
-			status: CandidateStatus.ACTIVE,
+			currentLocation,
+			citizenship,
+			status: status || CandidateStatus.ACTIVE,
 		});
 		return repository.save(candidate);
 	}
@@ -76,6 +117,8 @@ export class CandidateResolver {
 		@Arg("lastName", { nullable: true }) lastName?: string,
 		@Arg("email", { nullable: true }) email?: string,
 		@Arg("phone", { nullable: true }) phone?: string,
+		@Arg("currentLocation", { nullable: true }) currentLocation?: string,
+		@Arg("citizenship", { nullable: true }) citizenship?: string,
 		@Arg("status", () => CandidateStatus, { nullable: true })
 		status?: CandidateStatus
 	): Promise<CandidateEntity> {
@@ -86,8 +129,9 @@ export class CandidateResolver {
 		if (lastName) candidate.lastName = lastName;
 		if (email) candidate.email = email;
 		if (phone !== undefined) candidate.phone = phone;
+		if (currentLocation) candidate.currentLocation = currentLocation;
+		if (citizenship) candidate.citizenship = citizenship;
 		if (status) candidate.status = status;
-
 		return repository.save(candidate);
 	}
 

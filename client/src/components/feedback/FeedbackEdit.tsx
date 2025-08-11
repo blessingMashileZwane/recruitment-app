@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { mockGraphQL } from "../../mock/mockData";
+import { graphqlService } from "../../services/graphql.service";
 import type { Feedback } from "../../types";
 
 type FeedbackEditProps = {
@@ -25,7 +25,7 @@ export default function ({ candidateId, feedbackId, onCancel, onSave }: Feedback
         const loadFeedback = async () => {
             setLoading(true);
             try {
-                const feedback = await mockGraphQL.getFeedbackById(feedbackId);
+                const feedback = await graphqlService.getFeedbackById(feedbackId);
                 setFormData({
                     interviewerName: feedback.interviewerName,
                     interviewStep: feedback.interviewStep,
@@ -68,9 +68,9 @@ export default function ({ candidateId, feedbackId, onCancel, onSave }: Feedback
 
         try {
             if (feedbackId) {
-                await mockGraphQL.updateFeedback(feedbackToSave);
+                await graphqlService.updateFeedback(feedbackToSave);
             } else {
-                await mockGraphQL.addFeedback(feedbackToSave);
+                await graphqlService.addFeedback(feedbackToSave);
             }
             onSave(feedbackToSave);
         } catch (err) {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Candidate } from "../../../types";
-import { mockGraphQL } from "../../../mock/mockData";
+import { graphqlService } from "../../../services/graphql.service";
 
 type CandidateEditProps = {
     candidateId: string;
@@ -26,7 +26,7 @@ export default function CandidateEdit({ candidateId, onCancel, onSave }: Candida
         const loadCandidate = async () => {
             setLoading(true);
             try {
-                const data = await mockGraphQL.getCandidateById(candidateId);
+                const data = await graphqlService.getCandidateById(candidateId);
                 setCandidate(data);
                 setFormData({
                     name: data.name,
@@ -68,7 +68,7 @@ export default function CandidateEdit({ candidateId, onCancel, onSave }: Candida
         };
 
         try {
-            await mockGraphQL.updateCandidate(updatedCandidate);
+            await graphqlService.updateCandidate(updatedCandidate);
             onSave(updatedCandidate);
         } catch (err) {
             console.error("Failed to save candidate", err);

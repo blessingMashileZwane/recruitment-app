@@ -8,3 +8,4 @@ export * from "./interviewStage.entity";
 export * from "./interviewStageHistory.entity";
 export * from "./jobApplication.entity";
 export * from "./jobApplicationHistory.entity";
+export * from "./feedback.entity";

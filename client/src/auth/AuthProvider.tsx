@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-import { mockGraphQL } from "../mock/mockData";
+import { graphqlService } from "../services/graphql.service";
 import type { AuthContextType, User } from "../types";
+import { mockGraphQL } from "../mock/mockData";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -11,6 +12,7 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const login = async (email: string, password: string): Promise<boolean> => {
         try {
             const authenticatedUser = await mockGraphQL.authenticate(email, password);
+            // const authenticatedUser = await graphqlService.authenticate(email, password);
             if (authenticatedUser) {
                 setUser(authenticatedUser);
                 setIsLoggedIn(true);
@@ -26,6 +28,7 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const loginWithSSO = async (): Promise<boolean> => {
         try {
             const authenticatedUser = await mockGraphQL.authenticateSSO();
+            // const authenticatedUser = await graphqlService.authenticateSSO();
             if (authenticatedUser) {
                 setUser(authenticatedUser);
                 setIsLoggedIn(true);

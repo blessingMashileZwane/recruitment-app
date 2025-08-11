@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { mockGraphQL } from '../../mock/mockData';
 import type { Candidate, Feedback } from '../../types';
+import { graphqlService } from '../../services/graphql.service';
 
 type FeedbackFormProps = {
     candidateId: string;
@@ -65,7 +66,7 @@ function FeedbackForm({ candidateId, onViewFeedback }: FeedbackFormProps) {
             nextStepNotes: '',
         });
 
-        mockGraphQL.addFeedback(fb)
+        graphqlService.addFeedback(fb)
             .then(() => {
                 setLoading(false);
                 alert('Feedback added successfully');

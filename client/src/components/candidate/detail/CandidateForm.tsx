@@ -1,7 +1,7 @@
 import Papa from "papaparse";
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { mockGraphQL } from '../../../mock/mockData';
+import { graphqlService } from '../../../services/graphql.service';
 import type { Candidate } from '../../../types';
 import { FormField } from '../../ui/FormField';
 
@@ -31,7 +31,7 @@ function CandidateForm() {
         setLoading(true);
 
         try {
-            await mockGraphQL.addCandidate({
+            await graphqlService.addCandidate({
                 ...candidateForm,
                 skills: candidateForm.skills
                     .split(",")
@@ -105,7 +105,7 @@ function CandidateForm() {
 
                 try {
                     // Call your API to save candidates in bulk
-                    const { success, failed } = await mockGraphQL.addCandidatesBulk(candidates);
+                    const { success, failed } = await graphqlService.addCandidatesBulk(candidates);
 
                     toast.success(
                         `Upload complete. Saved: ${success.length}. Failed: ${failed.length}` +
