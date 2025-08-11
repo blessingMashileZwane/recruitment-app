@@ -28,10 +28,6 @@ export class InterviewStageHistoryEntity {
 	@Column()
 	name: string;
 
-	@Field({ nullable: true })
-	@Column({ type: "text", nullable: true })
-	description?: string;
-
 	@Field()
 	@Column()
 	feedback: string;

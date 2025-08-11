@@ -35,10 +35,8 @@ function CandidateDetails({ candidateId, onBack, onViewFeedback, onViewEdit }: C
 
     const getStatusColor = (status: CandidateOutput["status"]) => {
         const colors = {
-            [CandidateStatus.ACTIVE]: "bg-yellow-100 text-yellow-800",
-            [CandidateStatus.WITHDRAWN]: "bg-purple-100 text-purple-800",
-            [CandidateStatus.HIRED]: "bg-green-100 text-green-800",
-            [CandidateStatus.REJECTED]: "bg-red-100 text-red-800",
+            [CandidateStatus.OPEN]: "bg-green-100 text-green-800",
+            [CandidateStatus.CLOSED]: "bg-red-100 text-red-800",
         };
         return colors[status];
     };

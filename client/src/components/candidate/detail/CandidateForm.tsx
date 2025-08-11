@@ -2,7 +2,7 @@ import Papa from "papaparse";
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { graphqlService } from '../../../services/graphql.service';
-import { AppliedJob, CandidateStatus } from "../../../types/enums";
+import { AppliedJob, AppliedJobStatus, CandidateStatus } from "../../../types/enums";
 import type { CreateCandidateInput } from "../../../types/inputs";
 import { FormField } from '../../ui/FormField';
 
@@ -11,6 +11,7 @@ type CsvRow = {
     lastName?: string;
     email?: string;
     phone?: string;
+    status?: string;
     resumeUrl?: string;
     currentLocation?: string;
     citizenship?: string;
@@ -19,7 +20,8 @@ type CsvRow = {
     proficiencyLevel?: string;
     jobTitle?: string;
     department?: string;
-    status?: string;
+    appliedJob?: string;
+    appliedStatus?: string;
     title?: string;
     description?: string;
     isActive?: string | boolean;
@@ -35,7 +37,7 @@ function CandidateForm() {
         phone: "",
         currentLocation: "",
         citizenship: "",
-        status: CandidateStatus.ACTIVE,
+        status: CandidateStatus.OPEN,
         resumeUrl: "",
         candidateSkill: {
             university: "",
@@ -44,9 +46,9 @@ function CandidateForm() {
         },
         jobApplication: {
             title: "",
-            status: AppliedJob.TECH,
+            appliedJob: AppliedJob.TECH,
+            appliedStatus: AppliedJobStatus.ACTIVE,
             department: "",
-            description: "",
             isActive: true
         }
     });
@@ -65,7 +67,7 @@ function CandidateForm() {
                 phone: "",
                 currentLocation: "",
                 citizenship: "",
-                status: CandidateStatus.ACTIVE,
+                status: CandidateStatus.OPEN,
                 resumeUrl: "",
                 candidateSkill: {
                     university: "",
@@ -74,9 +76,9 @@ function CandidateForm() {
                 },
                 jobApplication: {
                     title: "",
-                    status: AppliedJob.TECH,
+                    appliedJob: AppliedJob.TECH,
+                    appliedStatus: AppliedJobStatus.ACTIVE,
                     department: "",
-                    description: "",
                     isActive: true
                 }
             });
@@ -126,9 +128,9 @@ function CandidateForm() {
                             },
                             jobApplication: {
                                 title: String(row["title"] || "").trim(),
-                                status: String(row["status"] || "applied") as AppliedJob,
+                                appliedJob: String(row["appliedJob"] || "applied") as AppliedJob,
+                                appliedStatus: String(row["appliedStatus"] || "active") as AppliedJobStatus,
                                 department: String(row["department"] || "").trim(),
-                                description: String(row["description"] || "").trim(),
                                 isActive: Boolean(row["isActive"]) || true
                             }
                         };

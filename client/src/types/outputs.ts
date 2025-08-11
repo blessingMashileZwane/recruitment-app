@@ -1,4 +1,4 @@
-import { CandidateStatus, AppliedJob } from "./enums";
+import { CandidateStatus, AppliedJob, AppliedJobStatus } from "./enums";
 
 export interface CandidateSkillOutput {
 	id: string;
@@ -25,9 +25,9 @@ export interface InterviewStageOutput {
 export interface JobApplicationOutput {
 	id: string;
 	title: string;
-	status: AppliedJob;
+	appliedJob?: AppliedJob;
+	appliedStatus?: AppliedJobStatus;
 	department?: string;
-	description?: string;
 	requirements?: string;
 	isActive: boolean;
 	interviewStages: InterviewStageOutput[];

@@ -31,9 +31,9 @@ export default function CandidateEdit({ candidateId, onCancel, onSave }: Candida
         },
         jobApplication: {
             title: "",
-            status: "PENDING",
+            appliedJob: "",
+            appliedStatus: "PENDING",
             department: "",
-            description: "",
             isActive: true
         }
     });
@@ -60,9 +60,9 @@ export default function CandidateEdit({ candidateId, onCancel, onSave }: Candida
                     },
                     jobApplication: {
                         title: data.jobApplication.title,
-                        status: data.jobApplication.status,
+                        appliedJob: data.jobApplication.appliedJob || "",
+                        appliedStatus: data.jobApplication.appliedStatus || "",
                         department: data.jobApplication.department || "",
-                        description: data.jobApplication.description || "",
                         isActive: data.jobApplication.isActive
                     }
                 });

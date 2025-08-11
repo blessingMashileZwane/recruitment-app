@@ -56,14 +56,13 @@ export class CandidateEntity {
 	@Column({
 		type: "enum",
 		enum: CandidateStatus,
-		default: CandidateStatus.ACTIVE,
+		default: CandidateStatus.OPEN,
 	})
-	status: CandidateStatus;
+	status?: CandidateStatus;
 
-	@Field(() => JobApplicationEntity)
-	@OneToOne(() => JobApplicationEntity)
-	@JoinColumn()
-	jobApplication: JobApplicationEntity;
+	@Field(() => [JobApplicationEntity])
+	@OneToMany(() => JobApplicationEntity, (application) => application.candidate)
+	jobApplications: JobApplicationEntity[];
 
 	@Field(() => CandidateSkillEntity)
 	@OneToOne(() => CandidateSkillEntity)

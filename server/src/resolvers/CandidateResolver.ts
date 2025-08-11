@@ -93,7 +93,7 @@ export class CandidateResolver {
 		@Arg("currentLocation", { nullable: true }) currentLocation?: string,
 		@Arg("citizenship", { nullable: true }) citizenship?: string,
 		@Arg("status", () => CandidateStatus, {
-			defaultValue: CandidateStatus.ACTIVE,
+			defaultValue: CandidateStatus.OPEN,
 		})
 		status?: CandidateStatus
 	): Promise<CandidateEntity> {
@@ -105,7 +105,7 @@ export class CandidateResolver {
 			phone,
 			currentLocation,
 			citizenship,
-			status: status || CandidateStatus.ACTIVE,
+			status: status || CandidateStatus.OPEN,
 		});
 		return repository.save(candidate);
 	}

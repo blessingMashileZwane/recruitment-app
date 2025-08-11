@@ -8,11 +8,16 @@ import {
 } from "typeorm";
 import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
 import { JobApplicationEntity } from "./jobApplication.entity";
-import { AppliedJob } from "../types";
+import { AppliedJob, AppliedJobStatus } from "../types";
 
 registerEnumType(AppliedJob, {
 	name: "AppliedJob",
 	description: "The job positions a candidate can apply for",
+});
+
+registerEnumType(AppliedJobStatus, {
+	name: "AppliedJobStatus",
+	description: "The status of a job application",
 });
 
 @ObjectType()
@@ -32,8 +37,15 @@ export class JobApplicationHistoryEntity {
 		enum: AppliedJob,
 		default: AppliedJob.OTHER,
 	})
-	status: AppliedJob;
+	appliedJob: AppliedJob;
 
+	@Field(() => AppliedJobStatus)
+	@Column({
+		type: "enum",
+		enum: AppliedJobStatus,
+		default: AppliedJobStatus.ACTIVE,
+	})
+	applicationStatus: AppliedJobStatus;
 	@Field()
 	@Column()
 	action: string;

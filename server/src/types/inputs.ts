@@ -1,5 +1,5 @@
 import { Field, ID, InputType } from "type-graphql";
-import { CandidateStatus, AppliedJob } from "./index";
+import { CandidateStatus, AppliedJob, AppliedJobStatus } from "./index";
 
 @InputType()
 export class CreateCandidateSkillInput {
@@ -18,9 +18,6 @@ export class CreateInterviewStageInput {
 	@Field()
 	name: string;
 
-	@Field({ nullable: true })
-	description?: string;
-
 	@Field()
 	feedback: string;
 
@@ -29,9 +26,6 @@ export class CreateInterviewStageInput {
 
 	@Field()
 	rating: number;
-
-	@Field()
-	comments: string;
 
 	@Field()
 	nextStepNotes: string;
@@ -50,9 +44,6 @@ export class CreateJobApplicationInput {
 
 	@Field({ nullable: true })
 	department?: string;
-
-	@Field({ nullable: true })
-	description?: string;
 
 	@Field({ nullable: true })
 	requirements?: string;
@@ -81,7 +72,7 @@ export class CreateCandidateInput {
 	@Field({ nullable: true })
 	citizenship?: string;
 
-	@Field(() => CandidateStatus, { defaultValue: CandidateStatus.ACTIVE })
+	@Field(() => CandidateStatus, { defaultValue: CandidateStatus.OPEN })
 	status: CandidateStatus;
 
 	@Field({ nullable: true })
@@ -118,9 +109,6 @@ export class UpdateInterviewStageInput {
 	name?: string;
 
 	@Field({ nullable: true })
-	description?: string;
-
-	@Field({ nullable: true })
 	feedback?: string;
 
 	@Field({ nullable: true })
@@ -128,9 +116,6 @@ export class UpdateInterviewStageInput {
 
 	@Field({ nullable: true })
 	rating?: number;
-
-	@Field({ nullable: true })
-	comments?: string;
 
 	@Field({ nullable: true })
 	nextStepNotes?: string;
@@ -145,7 +130,10 @@ export class UpdateJobApplicationInput {
 	title?: string;
 
 	@Field(() => AppliedJob, { nullable: true })
-	status?: AppliedJob;
+	appliedJob?: AppliedJob;
+
+	@Field(() => AppliedJobStatus, { nullable: true })
+	applicationStatus?: AppliedJobStatus;
 
 	@Field({ nullable: true })
 	department?: string;

@@ -11,12 +11,17 @@ import {
 import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
 import { JobApplicationHistoryEntity } from "./jobApplicationHistory.entity";
 import { InterviewStageEntity } from "./interviewStage.entity";
-import { AppliedJob } from "../types";
+import { AppliedJob, AppliedJobStatus } from "../types";
 import { CandidateEntity } from "./candidate.entity";
 
 registerEnumType(AppliedJob, {
 	name: "AppliedJob",
 	description: "The job positions a candidate can apply for",
+});
+
+registerEnumType(AppliedJobStatus, {
+	name: "AppliedJobStatus",
+	description: "The status of a job application",
 });
 
 @ObjectType()
@@ -36,7 +41,15 @@ export class JobApplicationEntity {
 		enum: AppliedJob,
 		default: AppliedJob.OTHER,
 	})
-	status: AppliedJob;
+	appliedJob: AppliedJob;
+
+	@Field(() => AppliedJobStatus)
+	@Column({
+		type: "enum",
+		enum: AppliedJobStatus,
+		default: AppliedJobStatus.ACTIVE,
+	})
+	applicationStatus: AppliedJobStatus;
 
 	@Field({ nullable: true })
 	@Column({ nullable: true })
@@ -55,7 +68,7 @@ export class JobApplicationEntity {
 	isActive: boolean;
 
 	@Field(() => CandidateEntity)
-	@OneToOne(() => CandidateEntity, (candidate) => candidate.jobApplication)
+	@ManyToOne(() => CandidateEntity, (candidate) => candidate.jobApplications)
 	candidate: CandidateEntity;
 
 	@Field(() => [InterviewStageEntity])

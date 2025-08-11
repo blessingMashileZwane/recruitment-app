@@ -1,6 +1,11 @@
 import { InputType, Field } from "type-graphql";
 
 export enum CandidateStatus {
+	OPEN = "open",
+	CLOSED = "closed",
+}
+
+export enum AppliedJobStatus {
 	ACTIVE = "active",
 	HIRED = "hired",
 	REJECTED = "rejected",
@@ -24,7 +29,10 @@ class JobApplication {
 	title: string;
 
 	@Field(() => AppliedJob)
-	status: AppliedJob;
+	appliedJob: AppliedJob;
+
+	@Field(() => AppliedJobStatus)
+	applicationStatus: AppliedJobStatus;
 
 	@Field({ nullable: true })
 	department?: string;
@@ -56,9 +64,6 @@ class InterviewStage {
 	@Field()
 	name: string;
 
-	@Field({ nullable: true })
-	description?: string;
-
 	@Field()
 	feedback: string;
 
@@ -67,9 +72,6 @@ class InterviewStage {
 
 	@Field()
 	rating: number;
-
-	@Field()
-	comments: string;
 
 	@Field()
 	nextStepNotes: string;
@@ -91,8 +93,10 @@ export class FullCandidate {
 
 	@Field({ nullable: true })
 	currentLocation?: string;
+
 	@Field({ nullable: true })
 	citizenship?: string;
+
 	@Field(() => CandidateStatus)
 	status: CandidateStatus;
 

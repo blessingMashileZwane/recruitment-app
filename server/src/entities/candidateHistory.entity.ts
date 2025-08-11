@@ -54,7 +54,7 @@ export class CandidateHistoryEntity {
 	@Column({
 		type: "enum",
 		enum: CandidateStatus,
-		default: CandidateStatus.ACTIVE,
+		default: CandidateStatus.OPEN,
 	})
 	status: CandidateStatus;
 

@@ -12,6 +12,7 @@ import {
 	CandidateSkillResolver,
 	InterviewStageResolver,
 	JobApplicationResolver,
+	FullCandidateResolver,
 } from "./resolvers";
 
 async function bootstrap() {
@@ -23,6 +24,7 @@ async function bootstrap() {
 			CandidateSkillResolver,
 			JobApplicationResolver,
 			InterviewStageResolver,
+			FullCandidateResolver,
 		],
 		container: { get: (cls) => new cls(dataSource) },
 		validate: false,
