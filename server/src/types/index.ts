@@ -7,13 +7,6 @@ export enum CandidateStatus {
 	WITHDRAWN = "withdrawn",
 }
 
-export enum InterviewStatus {
-	SCHEDULED = "scheduled",
-	COMPLETED = "completed",
-	CANCELLED = "cancelled",
-	PENDING = "pending",
-}
-
 export enum AppliedJob {
 	OPS = "operations",
 	FINANCE = "finance",
@@ -27,18 +20,23 @@ export enum AppliedJob {
 
 @InputType()
 class JobApplication {
+	@Field()
 	title: string;
-	status: AppliedJob;
-	department?: string;
-	description?: string;
-	requirements?: string;
-	isActive: boolean;
-}
 
-@InputType()
-class InterviewProgress {
-	@Field(() => InterviewStatus)
-	interviewStatus: InterviewStatus;
+	@Field(() => AppliedJob)
+	status: AppliedJob;
+
+	@Field({ nullable: true })
+	department?: string;
+
+	@Field({ nullable: true })
+	description?: string;
+
+	@Field({ nullable: true })
+	requirements?: string;
+
+	@Field()
+	isActive: boolean;
 }
 
 @InputType()
@@ -63,6 +61,18 @@ class InterviewStage {
 
 	@Field()
 	feedback: string;
+
+	@Field()
+	interviewerName: string;
+
+	@Field()
+	rating: number;
+
+	@Field()
+	comments: string;
+
+	@Field()
+	nextStepNotes: string;
 }
 
 @InputType()
@@ -92,8 +102,6 @@ export class FullCandidate {
 	@Field(() => CandidateSkill)
 	candidateSkill: CandidateSkill;
 
-	@Field(() => InterviewProgress)
-	interviewProgress: InterviewProgress;
 	@Field(() => JobApplication)
 	jobApplication: JobApplication;
 	@Field(() => [InterviewStage])

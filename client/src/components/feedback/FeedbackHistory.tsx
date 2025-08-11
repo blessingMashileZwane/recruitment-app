@@ -1,8 +1,8 @@
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { graphqlService } from "../../services/graphql.service";
-import type { Candidate, Feedback } from "../../types";
 import FeedbackItem from "../ui/FeedbackItem";
+import type { CandidateOutput, InterviewStageOutput } from "../../types/outputs";
 
 type FeedbackHistoryProps = {
     candidateId: string;
@@ -13,10 +13,10 @@ type FeedbackHistoryProps = {
 
 function FeedbackHistory({ candidateId, onBack, onAddFeedback, onEditFeedback }: FeedbackHistoryProps) {
     const [loading, setLoading] = useState(true);
-    const [selectedCandidate, setSelectedCandidate] = useState<Candidate>(
-        {} as Candidate
+    const [selectedCandidate, setSelectedCandidate] = useState<CandidateOutput>(
+        {} as CandidateOutput
     );
-    const [feedback, setFeedback] = useState<Feedback[]>([]);
+    const [feedback, setFeedback] = useState<InterviewStageOutput[]>([]);
     useEffect(() => {
         const loadFeedback = async () => {
             setLoading(true);
@@ -55,7 +55,7 @@ function FeedbackHistory({ candidateId, onBack, onAddFeedback, onEditFeedback }:
 
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-medium text-gray-900">
-                        Interview Feedback for {selectedCandidate?.name}
+                        Interview Feedback for {selectedCandidate?.firstName} {selectedCandidate?.lastName}
                     </h3>
                     <button
                         onClick={() => onAddFeedback(candidateId)}
@@ -68,10 +68,10 @@ function FeedbackHistory({ candidateId, onBack, onAddFeedback, onEditFeedback }:
 
                 {feedback.length > 0 ? (
                     <div className="space-y-4">
-                        {feedback.map((feedback) => (
-                            <FeedbackItem key={feedback.id}
-                                feedback={feedback}
-                                onEditFeedback={() => onEditFeedback(feedback.id)} />
+                        {feedback.map((interviewStage) => (
+                            <FeedbackItem key={interviewStage.id}
+                                interviewStage={interviewStage}
+                                onEditFeedback={() => onEditFeedback(interviewStage.id)} />
                         ))}
                     </div>
                 ) : (

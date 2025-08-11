@@ -6,6 +6,7 @@ import {
 	JoinColumn,
 	ManyToOne,
 	OneToMany,
+	OneToOne,
 	PrimaryGeneratedColumn,
 	UpdateDateColumn,
 } from "typeorm";
@@ -40,7 +41,7 @@ export class CandidateSkillEntity {
 	proficiencyLevel: number;
 
 	@Field(() => CandidateEntity)
-	@ManyToOne(() => CandidateEntity, (candidate) => candidate.candidateSkills)
+	@OneToOne(() => CandidateEntity, (candidate) => candidate.candidateSkill)
 	@JoinColumn({ name: "candidate_id" })
 	candidate: CandidateEntity;
 

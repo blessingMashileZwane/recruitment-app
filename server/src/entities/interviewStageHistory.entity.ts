@@ -36,6 +36,18 @@ export class InterviewStageHistoryEntity {
 	@Column()
 	feedback: string;
 
+	@Field()
+	@Column()
+	interviewerName: string;
+
+	@Field()
+	@Column()
+	rating: number;
+
+	@Field()
+	@Column()
+	nextStepNotes: string;
+
 	@Field(() => InterviewStageEntity)
 	@ManyToOne(() => InterviewStageEntity, (stage) => stage.history)
 	@JoinColumn({ name: "stage_id" })

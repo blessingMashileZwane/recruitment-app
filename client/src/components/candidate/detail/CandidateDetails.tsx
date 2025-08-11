@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { graphqlService } from "../../../services/graphql.service";
-import type { Candidate } from "../../../types";
+import type { CandidateOutput } from "../../../types/outputs";
+import { CandidateStatus } from "../../../types/enums";
 
 type CandidateDetails = {
     candidateId: string;
@@ -10,7 +11,7 @@ type CandidateDetails = {
 }
 
 function CandidateDetails({ candidateId, onBack, onViewFeedback, onViewEdit }: CandidateDetails) {
-    const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
+    const [selectedCandidate, setSelectedCandidate] = useState<CandidateOutput | null>(
         null
     );
     const [loading, setLoading] = useState(true);
@@ -32,13 +33,12 @@ function CandidateDetails({ candidateId, onBack, onViewFeedback, onViewEdit }: C
         loadCandidateDetails();
     }, [candidateId]);
 
-    const getStatusColor = (status: Candidate["status"]) => {
+    const getStatusColor = (status: CandidateOutput["status"]) => {
         const colors = {
-            screening: "bg-yellow-100 text-yellow-800",
-            technical: "bg-blue-100 text-blue-800",
-            final: "bg-purple-100 text-purple-800",
-            hired: "bg-green-100 text-green-800",
-            rejected: "bg-red-100 text-red-800",
+            [CandidateStatus.ACTIVE]: "bg-yellow-100 text-yellow-800",
+            [CandidateStatus.WITHDRAWN]: "bg-purple-100 text-purple-800",
+            [CandidateStatus.HIRED]: "bg-green-100 text-green-800",
+            [CandidateStatus.REJECTED]: "bg-red-100 text-red-800",
         };
         return colors[status];
     };
@@ -63,7 +63,7 @@ function CandidateDetails({ candidateId, onBack, onViewFeedback, onViewEdit }: C
                         </button>
 
                         <div className="flex justify-between items-center mb-4">
-                            <h1 className="font-bold">{selectedCandidate?.name}</h1>
+                            <h1 className="font-bold">{selectedCandidate?.firstName} {selectedCandidate?.lastName}</h1>
                             <button
                                 onClick={() => onViewFeedback(candidateId)}
                                 className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
@@ -82,35 +82,49 @@ function CandidateDetails({ candidateId, onBack, onViewFeedback, onViewEdit }: C
                                             <dd className="mt-1 text-sm text-gray-900">{selectedCandidate?.email}</dd>
                                         </div>
                                         <div>
-                                            <dt className="text-sm font-medium text-gray-500">Position</dt>
-                                            <dd className="mt-1 text-sm text-gray-900">{selectedCandidate?.position}</dd>
+                                            <dt className="text-sm font-medium text-gray-500">Phone</dt>
+                                            <dd className="mt-1 text-sm text-gray-900">{selectedCandidate?.phone}</dd>
                                         </div>
                                         <div>
-                                            <dt className="text-sm font-medium text-gray-500">Experience</dt>
-                                            <dd className="mt-1 text-sm text-gray-900">{selectedCandidate?.experience} years</dd>
+                                            <dt className="text-sm font-medium text-gray-500">Location</dt>
+                                            <dd className="mt-1 text-sm text-gray-900">{selectedCandidate?.currentLocation}</dd>
+                                        </div>
+                                        <div>
+                                            <dt className="text-sm font-medium text-gray-500">Citizenship</dt>
+                                            <dd className="mt-1 text-sm text-gray-900">{selectedCandidate?.citizenship}</dd>
                                         </div>
                                         <div>
                                             <dt className="text-sm font-medium text-gray-500">Status</dt>
                                             <dd className="mt-1">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${selectedCandidate && getStatusColor(selectedCandidate?.status)}`}>
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${selectedCandidate && getStatusColor(selectedCandidate.status)}`}>
                                                     {selectedCandidate?.status}
                                                 </span>
                                             </dd>
                                         </div>
+                                        <div>
+                                            <dt className="text-sm font-medium text-gray-500">Applied Position</dt>
+                                            <dd className="mt-1 text-sm text-gray-900">{selectedCandidate?.jobApplication.title}</dd>
+                                        </div>
+                                        <div>
+                                            <dt className="text-sm font-medium text-gray-500">Department</dt>
+                                            <dd className="mt-1 text-sm text-gray-900">{selectedCandidate?.jobApplication.department}</dd>
+                                        </div>
                                         <div className="sm:col-span-2">
                                             <dt className="text-sm font-medium text-gray-500">Skills</dt>
                                             <dd className="mt-1 text-sm text-gray-900">
-                                                <div className="flex justify-center flex-wrap gap-2 mt-2">
-                                                    {selectedCandidate?.skills.map((skill, index) => (
-                                                        <span
-                                                            key={index}
-                                                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                                                        >
-                                                            {skill}
-                                                        </span>
-                                                    ))}
+                                                <div className="flex flex-wrap gap-2 mt-2">
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                        {selectedCandidate?.candidateSkill.qualification}
+                                                    </span>
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        Level: {selectedCandidate?.candidateSkill.proficiencyLevel}
+                                                    </span>
                                                 </div>
                                             </dd>
+                                        </div>
+                                        <div className="sm:col-span-2">
+                                            <dt className="text-sm font-medium text-gray-500">Education</dt>
+                                            <dd className="mt-1 text-sm text-gray-900">{selectedCandidate?.candidateSkill.university}</dd>
                                         </div>
                                     </dl>
                                 </div>

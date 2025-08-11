@@ -1,8 +1,6 @@
-import Papa from 'papaparse'
-import React from 'react'
-import type { Candidate } from '../types'
+import type { CreateCandidateInput } from '../types/inputs';
 
-function UploadCsv({ onUpload }: { onUpload: (c: Candidate[]) => void }) {
+function UploadCsv({ onUpload }: { onUpload: (c: CreateCandidateInput[]) => void }) {
     // function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     //     const file = e.target.files?.[0]
     //     if (!file) return

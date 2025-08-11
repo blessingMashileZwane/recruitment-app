@@ -26,8 +26,8 @@ export class JobApplicationResolver {
 	): Promise<JobApplicationEntity | null> {
 		const repository = this.dataSource.getRepository(JobApplicationEntity);
 		return repository.findOne({
-			where: { interviewProgress: { candidateId } },
-			relations: ["interviewProgress"],
+			where: { candidate: { id: candidateId } },
+			relations: ["candidate"],
 		});
 	}
 
@@ -77,8 +77,8 @@ export class JobApplicationResolver {
 	): Promise<JobApplicationEntity> {
 		const repository = this.dataSource.getRepository(JobApplicationEntity);
 		const application = await repository.findOneOrFail({
-			where: { interviewProgress: { candidateId } },
-			relations: ["interviewProgress"],
+			where: { candidate: { id: candidateId } },
+			relations: ["candidate"],
 		});
 
 		if (title) application.title = title;

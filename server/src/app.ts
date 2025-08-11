@@ -1,19 +1,18 @@
-import { permissions } from "./shields/permissions";
-import "reflect-metadata";
-import express from "express";
 import { ApolloServer } from "apollo-server-express";
+import express from "express";
+import "reflect-metadata";
 import { buildSchema } from "type-graphql";
+import { permissions } from "./shields/permissions";
 
+import { applyMiddleware } from "graphql-middleware";
+import { getDataSource } from "./config";
+import { buildContext, contextMiddleware } from "./middleware";
 import {
 	CandidateResolver,
 	CandidateSkillResolver,
-	JobApplicationResolver,
-	InterviewProgressResolver,
 	InterviewStageResolver,
+	JobApplicationResolver,
 } from "./resolvers";
-import { getDataSource } from "./config";
-import { buildContext, contextMiddleware } from "./middleware";
-import { applyMiddleware } from "graphql-middleware";
 
 async function bootstrap() {
 	const dataSource = await getDataSource();
@@ -23,7 +22,6 @@ async function bootstrap() {
 			CandidateResolver,
 			CandidateSkillResolver,
 			JobApplicationResolver,
-			InterviewProgressResolver,
 			InterviewStageResolver,
 		],
 		container: { get: (cls) => new cls(dataSource) },

@@ -26,8 +26,8 @@ export class InterviewStageResolver {
 	): Promise<InterviewStageEntity[] | null> {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
 		return repository.find({
-			where: { interviewProgress: { candidateId } },
-			relations: ["interviewProgress"],
+			where: { jobApplication: { candidate: { id: candidateId } } },
+			relations: ["jobApplication"],
 		});
 	}
 
@@ -68,8 +68,8 @@ export class InterviewStageResolver {
 	): Promise<InterviewStageEntity> {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
 		const stage = await repository.findOneOrFail({
-			where: { interviewProgress: { candidateId } },
-			relations: ["interviewProgress"],
+			where: { jobApplication: { candidate: { id: candidateId } } },
+			relations: ["jobApplication"],
 		});
 
 		if (name) stage.name = name;

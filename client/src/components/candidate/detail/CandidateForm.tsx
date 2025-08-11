@@ -2,28 +2,53 @@ import Papa from "papaparse";
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { graphqlService } from '../../../services/graphql.service';
-import type { Candidate } from '../../../types';
+import { AppliedJob, CandidateStatus } from "../../../types/enums";
+import type { CreateCandidateInput } from "../../../types/inputs";
 import { FormField } from '../../ui/FormField';
 
 type CsvRow = {
-    name?: string;
+    firstName?: string;
+    lastName?: string;
     email?: string;
-    position?: string;
-    experience?: string;
-    skills?: string;
+    phone?: string;
+    resumeUrl?: string;
+    currentLocation?: string;
+    citizenship?: string;
+    university?: string;
+    qualification?: string;
+    proficiencyLevel?: string;
+    jobTitle?: string;
+    department?: string;
     status?: string;
+    title?: string;
+    description?: string;
+    isActive?: string | boolean;
 };
 
 function CandidateForm() {
     const [loading, setLoading] = useState(false);
 
-    const [candidateForm, setCandidateForm] = useState({
-        name: "",
+    const [candidateForm, setCandidateForm] = useState<CreateCandidateInput>({
+        firstName: "",
+        lastName: "",
         email: "",
-        position: "",
-        experience: 0,
-        skills: "",
-        status: "screening" as Candidate["status"],
+        phone: "",
+        currentLocation: "",
+        citizenship: "",
+        status: CandidateStatus.ACTIVE,
+        resumeUrl: "",
+        candidateSkill: {
+            university: "",
+            qualification: "",
+            proficiencyLevel: 1
+        },
+        jobApplication: {
+            title: "",
+            status: AppliedJob.TECH,
+            department: "",
+            description: "",
+            isActive: true
+        }
     });
 
     const handleAddCandidate = async (e: React.FormEvent) => {
@@ -31,24 +56,34 @@ function CandidateForm() {
         setLoading(true);
 
         try {
-            await graphqlService.addCandidate({
-                ...candidateForm,
-                skills: candidateForm.skills
-                    .split(",")
-                    .map((s) => s.trim())
-                    .filter((s) => s.length > 0),
-            });
+            await graphqlService.addCandidate(candidateForm);
 
             setCandidateForm({
-                name: "",
+                firstName: "",
+                lastName: "",
                 email: "",
-                position: "",
-                experience: 0,
-                skills: "",
-                status: "screening",
+                phone: "",
+                currentLocation: "",
+                citizenship: "",
+                status: CandidateStatus.ACTIVE,
+                resumeUrl: "",
+                candidateSkill: {
+                    university: "",
+                    qualification: "",
+                    proficiencyLevel: 1
+                },
+                jobApplication: {
+                    title: "",
+                    status: AppliedJob.TECH,
+                    department: "",
+                    description: "",
+                    isActive: true
+                }
             });
+            toast.success("Candidate added successfully");
         } catch (error) {
             console.error("Failed to add candidate:", error);
+            toast.error("Failed to add candidate");
         } finally {
             setLoading(false);
         }
@@ -70,24 +105,36 @@ function CandidateForm() {
                 }
 
                 // Map and validate parsed data to Candidate[]
-                const candidates: Candidate[] = [];
+                const candidates: CreateCandidateInput[] = [];
                 const invalidRows: number[] = [];
 
                 for (const [index, row] of results.data.entries()) {
                     try {
-                        const candidate: Candidate = {
-                            id: "", // leave empty or generate later
-                            name: String(row["name"] || "").trim(),
+                        const candidate: CreateCandidateInput = {
+                            firstName: String(row["firstName"] || "").trim(),
+                            lastName: String(row["lastName"] || "").trim(),
                             email: String(row["email"] || "").trim(),
-                            position: String(row["position"] || "").trim(),
-                            experience: Number(row["experience"]) || 0,
-                            skills: (String(row["skills"] || "")).split(",").map(s => s.trim()).filter(Boolean),
-                            status: String(row["status"] || "screening") as Candidate["status"],
-                            addedDate: new Date().toISOString().slice(0, 10), // today’s date as YYYY-MM-DD
+                            phone: String(row["phone"] || "").trim(),
+                            currentLocation: String(row["currentLocation"] || "").trim(),
+                            citizenship: String(row["citizenship"] || "").trim(),
+                            status: String(row["status"] || "active") as CandidateStatus,
+                            resumeUrl: String(row["resumeUrl"] || "").trim(),
+                            candidateSkill: {
+                                university: String(row["university"] || "").trim(),
+                                qualification: String(row["qualification"] || "").trim(),
+                                proficiencyLevel: Number(row["proficiencyLevel"]) || 1
+                            },
+                            jobApplication: {
+                                title: String(row["title"] || "").trim(),
+                                status: String(row["status"] || "applied") as AppliedJob,
+                                department: String(row["department"] || "").trim(),
+                                description: String(row["description"] || "").trim(),
+                                isActive: Boolean(row["isActive"]) || true
+                            }
                         };
 
                         // Basic validation example
-                        if (!candidate.name || !candidate.email) {
+                        if (!candidate.firstName || !candidate.email) {
                             invalidRows.push(index + 2); // +2 for header and zero-index
                             continue;
                         }
@@ -159,11 +206,20 @@ function CandidateForm() {
                 >
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <FormField
-                            label="Name"
+                            label="First Name"
                             required
-                            value={candidateForm.name}
+                            value={candidateForm.firstName}
                             onChange={(e) =>
-                                setCandidateForm((prev) => ({ ...prev, name: e.target.value }))
+                                setCandidateForm((prev) => ({ ...prev, firstName: e.target.value }))
+                            }
+                        />
+
+                        <FormField
+                            label="Last Name"
+                            required
+                            value={candidateForm.lastName}
+                            onChange={(e) =>
+                                setCandidateForm((prev) => ({ ...prev, lastName: e.target.value }))
                             }
                         />
 
@@ -178,53 +234,105 @@ function CandidateForm() {
                         />
 
                         <FormField
-                            label="Position"
-                            required
-                            value={candidateForm.position}
+                            label="Phone"
+                            type="tel"
+                            value={candidateForm.phone || ""}
                             onChange={(e) =>
-                                setCandidateForm((prev) => ({ ...prev, position: e.target.value }))
+                                setCandidateForm((prev) => ({ ...prev, phone: e.target.value }))
+                            }
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <FormField
+                            label="Current Location"
+                            value={candidateForm.currentLocation || ""}
+                            onChange={(e) =>
+                                setCandidateForm((prev) => ({ ...prev, currentLocation: e.target.value }))
                             }
                         />
 
                         <FormField
-                            label="Experience (years)"
-                            type="number"
-                            min={0}
-                            value={candidateForm.experience}
+                            label="Citizenship"
+                            value={candidateForm.citizenship || ""}
+                            onChange={(e) =>
+                                setCandidateForm((prev) => ({ ...prev, citizenship: e.target.value }))
+                            }
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <FormField
+                            label="University"
+                            value={candidateForm.candidateSkill.university}
                             onChange={(e) =>
                                 setCandidateForm((prev) => ({
                                     ...prev,
-                                    experience: parseInt(e.target.value) || 0
+                                    candidateSkill: { ...prev.candidateSkill, university: e.target.value }
+                                }))
+                            }
+                        />
+
+                        <FormField
+                            label="Qualification"
+                            value={candidateForm.candidateSkill.qualification}
+                            onChange={(e) =>
+                                setCandidateForm((prev) => ({
+                                    ...prev,
+                                    candidateSkill: { ...prev.candidateSkill, qualification: e.target.value }
                                 }))
                             }
                         />
                     </div>
 
                     <FormField
-                        label="Skills (comma-separated)"
-                        placeholder="React, TypeScript, Node.js"
-                        value={candidateForm.skills}
-                        onChange={(e) =>
-                            setCandidateForm((prev) => ({ ...prev, skills: e.target.value }))
-                        }
-                    />
-
-                    <FormField
-                        label="Initial Status"
-                        value={candidateForm.status}
+                        label="Job Title"
+                        required
+                        value={candidateForm.jobApplication.title}
                         onChange={(e) =>
                             setCandidateForm((prev) => ({
                                 ...prev,
-                                status: e.target.value as Candidate["status"]
+                                jobApplication: { ...prev.jobApplication, title: e.target.value }
                             }))
                         }
-                        options={[
-                            { value: "screening", label: "Screening" },
-                            { value: "technical", label: "Technical" },
-                            { value: "final", label: "Final" },
-                            { value: "hired", label: "Hired" },
-                            { value: "rejected", label: "Rejected" }
-                        ]}
+                    />
+
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <FormField
+                            label="Department"
+                            value={candidateForm.jobApplication.department || ""}
+                            onChange={(e) =>
+                                setCandidateForm((prev) => ({
+                                    ...prev,
+                                    jobApplication: { ...prev.jobApplication, department: e.target.value }
+                                }))
+                            }
+                        />
+
+                        <FormField
+                            label="Status"
+                            value={candidateForm.status}
+                            onChange={(e) =>
+                                setCandidateForm((prev) => ({
+                                    ...prev,
+                                    status: e.target.value as CandidateStatus
+                                }))
+                            }
+                            options={Object.entries(CandidateStatus).map(([key, value]) => ({
+                                value: value,
+                                label: key
+                            }))}
+                        />
+                    </div>
+
+                    <FormField
+                        label="Resume URL"
+                        type="url"
+                        placeholder="https://..."
+                        value={candidateForm.resumeUrl || ""}
+                        onChange={(e) =>
+                            setCandidateForm((prev) => ({ ...prev, resumeUrl: e.target.value }))
+                        }
                     />
 
                     <div className="flex justify-end space-x-3">

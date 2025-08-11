@@ -1,6 +1,141 @@
-import { Field, ID, InputType } from "type-graphql";
+import { Field, ID, InputType, ObjectType } from "type-graphql";
 import { CandidateStatus, AppliedJob } from "./index";
 
+// Base Types
+@ObjectType("CandidateSkillOutput")
+@InputType("CandidateSkillInput")
+export class CandidateSkillDTO {
+	@Field(() => ID, { nullable: true })
+	id?: string;
+
+	@Field()
+	university: string;
+
+	@Field()
+	qualification: string;
+
+	@Field()
+	proficiencyLevel: number;
+
+	@Field({ nullable: true })
+	createdAt?: Date;
+
+	@Field({ nullable: true })
+	updatedAt?: Date;
+}
+
+@ObjectType("InterviewStageOutput")
+@InputType("InterviewStageInput")
+export class InterviewStageDTO {
+	@Field(() => ID, { nullable: true })
+	id?: string;
+
+	@Field()
+	name: string;
+
+	@Field({ nullable: true })
+	description?: string;
+
+	@Field()
+	feedback: string;
+
+	@Field()
+	interviewerName: string;
+
+	@Field()
+	rating: number;
+
+	@Field()
+	comments: string;
+
+	@Field()
+	nextStepNotes: string;
+
+	@Field({ nullable: true })
+	createdAt?: Date;
+
+	@Field({ nullable: true })
+	updatedAt?: Date;
+}
+
+@ObjectType("JobApplicationOutput")
+@InputType("JobApplicationInput")
+export class JobApplicationDTO {
+	@Field(() => ID, { nullable: true })
+	id?: string;
+
+	@Field()
+	title: string;
+
+	@Field(() => AppliedJob)
+	status: AppliedJob;
+
+	@Field({ nullable: true })
+	department?: string;
+
+	@Field({ nullable: true })
+	description?: string;
+
+	@Field({ nullable: true })
+	requirements?: string;
+
+	@Field()
+	isActive: boolean;
+
+	@Field(() => [InterviewStageDTO], { nullable: true })
+	interviewStages?: InterviewStageDTO[];
+
+	@Field({ nullable: true })
+	createdAt?: Date;
+
+	@Field({ nullable: true })
+	updatedAt?: Date;
+}
+
+@ObjectType("CandidateOutput")
+@InputType("CandidateInput")
+export class CandidateDTO {
+	@Field(() => ID, { nullable: true })
+	id?: string;
+
+	@Field()
+	firstName: string;
+
+	@Field()
+	lastName: string;
+
+	@Field()
+	email: string;
+
+	@Field({ nullable: true })
+	phone?: string;
+
+	@Field({ nullable: true })
+	currentLocation?: string;
+
+	@Field({ nullable: true })
+	citizenship?: string;
+
+	@Field(() => CandidateStatus)
+	status: CandidateStatus;
+
+	@Field({ nullable: true })
+	resumeUrl?: string;
+
+	@Field(() => CandidateSkillDTO)
+	candidateSkill: CandidateSkillDTO;
+
+	@Field(() => JobApplicationDTO)
+	jobApplication: JobApplicationDTO;
+
+	@Field({ nullable: true })
+	createdAt?: Date;
+
+	@Field({ nullable: true })
+	updatedAt?: Date;
+}
+
+// Create Input Types
 @InputType()
 export class CreateCandidateSkillInput {
 	@Field()
@@ -94,6 +229,7 @@ export class CreateCandidateInput {
 	jobApplication: CreateJobApplicationInput;
 }
 
+// Update Input Types
 @InputType()
 export class UpdateCandidateSkillInput {
 	@Field(() => ID)
@@ -190,6 +326,26 @@ export class UpdateCandidateInput {
 	resumeUrl?: string;
 }
 
+// Response Types for Lists
+@ObjectType()
+export class CandidateListResponse {
+	@Field(() => [CandidateDTO])
+	items: CandidateDTO[];
+
+	@Field()
+	total: number;
+
+	@Field()
+	page: number;
+
+	@Field()
+	pageSize: number;
+
+	@Field()
+	totalPages: number;
+}
+
+// Filter and Sort Input Types
 @InputType()
 export class CandidateFilterInput {
 	@Field({ nullable: true })

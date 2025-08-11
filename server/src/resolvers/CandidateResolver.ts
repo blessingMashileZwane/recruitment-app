@@ -66,15 +66,15 @@ export class CandidateResolver {
 		};
 	}
 
-	@Query(() => [CandidateEntity])
-	async candidatesWithPagination(
-		@Arg("page", () => ID, { defaultValue: 1 }) page: number,
-		@Arg("limit", () => ID, { defaultValue: 10 }) limit: number
-	): Promise<CandidateEntity[]> {
-		const repository = this.dataSource.getRepository(CandidateEntity);
-		const skip = (page - 1) * limit;
-		return repository.find({ skip, take: limit });
-	}
+	// @Query(() => [CandidateEntity])
+	// async candidatesWithPagination(
+	// 	@Arg("page", () => ID, { defaultValue: 1 }) page: number,
+	// 	@Arg("limit", () => ID, { defaultValue: 10 }) limit: number
+	// ): Promise<CandidateEntity[]> {
+	// 	const repository = this.dataSource.getRepository(CandidateEntity);
+	// 	const skip = (page - 1) * limit;
+	// 	return repository.find({ skip, take: limit });
+	// }
 
 	@Query(() => CandidateEntity, { nullable: true })
 	async candidate(

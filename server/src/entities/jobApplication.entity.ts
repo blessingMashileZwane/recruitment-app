@@ -5,11 +5,14 @@ import {
 	CreateDateColumn,
 	UpdateDateColumn,
 	OneToMany,
+	ManyToOne,
+	OneToOne,
 } from "typeorm";
 import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
-import { InterviewProgressEntity } from "./interviewProgress.entity";
 import { JobApplicationHistoryEntity } from "./jobApplicationHistory.entity";
+import { InterviewStageEntity } from "./interviewStage.entity";
 import { AppliedJob } from "../types";
+import { CandidateEntity } from "./candidate.entity";
 
 registerEnumType(AppliedJob, {
 	name: "AppliedJob",
@@ -51,12 +54,13 @@ export class JobApplicationEntity {
 	@Column({ default: true })
 	isActive: boolean;
 
-	@Field(() => [InterviewProgressEntity])
-	@OneToMany(
-		() => InterviewProgressEntity,
-		(progress) => progress.jobApplication
-	)
-	interviewProgress: InterviewProgressEntity[];
+	@Field(() => CandidateEntity)
+	@OneToOne(() => CandidateEntity, (candidate) => candidate.jobApplication)
+	candidate: CandidateEntity;
+
+	@Field(() => [InterviewStageEntity])
+	@OneToMany(() => InterviewStageEntity, (stage) => stage.jobApplication)
+	interviewStages: InterviewStageEntity[];
 
 	@Field(() => [JobApplicationHistoryEntity])
 	@OneToMany(

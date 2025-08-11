@@ -1,25 +1,41 @@
 import { useEffect, useState } from "react";
-import type { Candidate } from "../../../types";
 import { graphqlService } from "../../../services/graphql.service";
+import { CandidateStatus } from "../../../types/enums";
+import type { UpdateCandidateInput } from "../../../types/inputs";
+import type { CandidateOutput } from "../../../types/outputs";
 
 type CandidateEditProps = {
     candidateId: string;
     onCancel: (candidateId: string) => void;
-    onSave: (updatedCandidate: Candidate) => void;
+    onSave: (updatedCandidate: CandidateOutput) => void;
 };
 
-const statuses = ["screening", "technical", "final", "hired", "rejected"];
+const statuses = Object.values(CandidateStatus);
 
 export default function CandidateEdit({ candidateId, onCancel, onSave }: CandidateEditProps) {
-    const [candidate, setCandidate] = useState<Candidate | null>(null);
+    const [candidate, setCandidate] = useState<CandidateOutput | null>(null);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
-        name: "",
+        firstName: "",
+        lastName: "",
         email: "",
-        position: "",
-        experience: 0,
-        status: "screening",
-        skills: "",
+        phone: "",
+        currentLocation: "",
+        citizenship: "",
+        status: "SCREENING",
+        resumeUrl: "",
+        candidateSkill: {
+            university: "",
+            qualification: "",
+            proficiencyLevel: 1
+        },
+        jobApplication: {
+            title: "",
+            status: "PENDING",
+            department: "",
+            description: "",
+            isActive: true
+        }
     });
 
     useEffect(() => {
@@ -29,12 +45,26 @@ export default function CandidateEdit({ candidateId, onCancel, onSave }: Candida
                 const data = await graphqlService.getCandidateById(candidateId);
                 setCandidate(data);
                 setFormData({
-                    name: data.name,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
                     email: data.email,
-                    position: data.position,
-                    experience: data.experience,
+                    phone: data.phone || "",
+                    currentLocation: data.currentLocation || "",
+                    citizenship: data.citizenship || "",
                     status: data.status,
-                    skills: data.skills.join(", "),
+                    resumeUrl: data.resumeUrl || "",
+                    candidateSkill: {
+                        university: data.candidateSkill.university,
+                        qualification: data.candidateSkill.qualification,
+                        proficiencyLevel: data.candidateSkill.proficiencyLevel
+                    },
+                    jobApplication: {
+                        title: data.jobApplication.title,
+                        status: data.jobApplication.status,
+                        department: data.jobApplication.department || "",
+                        description: data.jobApplication.description || "",
+                        isActive: data.jobApplication.isActive
+                    }
                 });
             } catch (err) {
                 console.error("Failed to load candidate", err);
@@ -57,19 +87,21 @@ export default function CandidateEdit({ candidateId, onCancel, onSave }: Candida
         e.preventDefault();
         if (!candidate) return;
 
-        const updatedCandidate: Candidate = {
-            ...candidate,
-            name: formData.name,
+        const updatedCandidate: UpdateCandidateInput = {
+            id: candidateId,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
             email: formData.email,
-            position: formData.position,
-            experience: formData.experience,
-            status: formData.status as Candidate["status"],
-            skills: formData.skills.split(",").map((s) => s.trim()).filter(Boolean),
+            phone: formData.phone,
+            currentLocation: formData.currentLocation,
+            citizenship: formData.citizenship,
+            status: formData.status as CandidateStatus,
+            resumeUrl: formData.resumeUrl
         };
 
         try {
-            await graphqlService.updateCandidate(updatedCandidate);
-            onSave(updatedCandidate);
+            const result = await graphqlService.updateCandidate(updatedCandidate);
+            onSave(result);
         } catch (err) {
             console.error("Failed to save candidate", err);
         }
@@ -82,17 +114,31 @@ export default function CandidateEdit({ candidateId, onCancel, onSave }: Candida
         <div className="max-w-xl mx-auto bg-white p-6 rounded shadow">
             <h2 className="text-xl font-semibold mb-4">Edit Candidate</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-                <label className="block">
-                    <span className="text-gray-700">Name</span>
-                    <input
-                        name="name"
-                        type="text"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full border rounded p-2"
-                    />
-                </label>
+                <div className="grid grid-cols-2 gap-4">
+                    <label className="block">
+                        <span className="text-gray-700">First Name</span>
+                        <input
+                            name="firstName"
+                            type="text"
+                            value={formData.firstName}
+                            onChange={handleChange}
+                            required
+                            className="mt-1 block w-full border rounded p-2"
+                        />
+                    </label>
+
+                    <label className="block">
+                        <span className="text-gray-700">Last Name</span>
+                        <input
+                            name="lastName"
+                            type="text"
+                            value={formData.lastName}
+                            onChange={handleChange}
+                            required
+                            className="mt-1 block w-full border rounded p-2"
+                        />
+                    </label>
+                </div>
 
                 <label className="block">
                     <span className="text-gray-700">Email</span>
@@ -107,26 +153,34 @@ export default function CandidateEdit({ candidateId, onCancel, onSave }: Candida
                 </label>
 
                 <label className="block">
-                    <span className="text-gray-700">Position</span>
+                    <span className="text-gray-700">Phone</span>
                     <input
-                        name="position"
-                        type="text"
-                        value={formData.position}
+                        name="phone"
+                        type="tel"
+                        value={formData.phone}
                         onChange={handleChange}
-                        required
                         className="mt-1 block w-full border rounded p-2"
                     />
                 </label>
 
                 <label className="block">
-                    <span className="text-gray-700">Experience (years)</span>
+                    <span className="text-gray-700">Current Location</span>
                     <input
-                        name="experience"
-                        type="number"
-                        min={0}
-                        value={formData.experience}
+                        name="currentLocation"
+                        type="text"
+                        value={formData.currentLocation}
                         onChange={handleChange}
-                        required
+                        className="mt-1 block w-full border rounded p-2"
+                    />
+                </label>
+
+                <label className="block">
+                    <span className="text-gray-700">Citizenship</span>
+                    <input
+                        name="citizenship"
+                        type="text"
+                        value={formData.citizenship}
+                        onChange={handleChange}
                         className="mt-1 block w-full border rounded p-2"
                     />
                 </label>
@@ -142,21 +196,21 @@ export default function CandidateEdit({ candidateId, onCancel, onSave }: Candida
                     >
                         {statuses.map((s) => (
                             <option key={s} value={s}>
-                                {s.charAt(0).toUpperCase() + s.slice(1)}
+                                {s}
                             </option>
                         ))}
                     </select>
                 </label>
 
                 <label className="block">
-                    <span className="text-gray-700">Skills (comma separated)</span>
-                    <textarea
-                        name="skills"
-                        value={formData.skills}
+                    <span className="text-gray-700">Resume URL</span>
+                    <input
+                        name="resumeUrl"
+                        type="url"
+                        value={formData.resumeUrl}
                         onChange={handleChange}
-                        rows={3}
                         className="mt-1 block w-full border rounded p-2"
-                        placeholder="e.g. React, TypeScript, Node.js"
+                        placeholder="https://..."
                     />
                 </label>
 

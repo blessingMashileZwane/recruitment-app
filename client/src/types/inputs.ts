@@ -1,0 +1,95 @@
+import { CandidateStatus, AppliedJob } from "./enums";
+
+export interface CreateCandidateSkillInput {
+	university: string;
+	qualification: string;
+	proficiencyLevel: number;
+}
+
+export interface CreateInterviewStageInput {
+	name: string;
+	description?: string;
+	feedback: string;
+	interviewerName: string;
+	rating: number;
+	nextStepNotes: string;
+	jobApplicationId: string;
+}
+
+export interface CreateJobApplicationInput {
+	title: string;
+	status: AppliedJob;
+	department?: string;
+	description?: string;
+	requirements?: string;
+	isActive: boolean;
+}
+
+export interface CreateCandidateInput {
+	firstName: string;
+	lastName: string;
+	email: string;
+	phone?: string;
+	currentLocation?: string;
+	citizenship?: string;
+	status: CandidateStatus;
+	resumeUrl?: string;
+	candidateSkill: CreateCandidateSkillInput;
+	jobApplication: CreateJobApplicationInput;
+}
+
+export interface UpdateCandidateSkillInput {
+	id: string;
+	university?: string;
+	qualification?: string;
+	proficiencyLevel?: number;
+}
+
+export interface UpdateInterviewStageInput {
+	id: string;
+	name?: string;
+	description?: string;
+	feedback?: string;
+	interviewerName?: string;
+	rating?: number;
+	comments?: string;
+	nextStepNotes?: string;
+}
+
+export interface UpdateJobApplicationInput {
+	id: string;
+	title?: string;
+	status?: AppliedJob;
+	department?: string;
+	description?: string;
+	requirements?: string;
+	isActive?: boolean;
+}
+
+export interface UpdateCandidateInput {
+	id: string;
+	firstName?: string;
+	lastName?: string;
+	email?: string;
+	phone?: string;
+	currentLocation?: string;
+	citizenship?: string;
+	status?: CandidateStatus;
+	resumeUrl?: string;
+}
+
+export interface CandidateFilterInput {
+	search?: string;
+	status?: CandidateStatus;
+	jobType?: AppliedJob;
+}
+
+export interface SortInput {
+	field: string;
+	direction: "ASC" | "DESC";
+}
+
+export interface PaginationInput {
+	page: number;
+	pageSize: number;
+}

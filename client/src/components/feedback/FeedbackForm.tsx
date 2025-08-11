@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { mockGraphQL } from '../../mock/mockData';
-import type { Candidate, Feedback } from '../../types';
 import { graphqlService } from '../../services/graphql.service';
+import type { CandidateOutput } from '../../types/outputs';
+import type { CreateInterviewStageInput } from '../../types/inputs';
 
 type FeedbackFormProps = {
     candidateId: string;
@@ -11,20 +12,20 @@ type FeedbackFormProps = {
 
 function FeedbackForm({ candidateId, onViewFeedback }: FeedbackFormProps) {
     const [loading, setLoading] = useState(true);
-    const [selectedCandidate, setSelectedCandidate] = useState<Candidate>(
-        {} as Candidate
+    const [selectedCandidate, setSelectedCandidate] = useState<CandidateOutput>(
+        {} as CandidateOutput
     );
     const [feedbackForm, setFeedbackForm] = useState<{
         interviewerName: string;
         interviewStep: string;
         rating: number;
-        comments: string;
+        feedback: string;
         nextStepNotes: string;
     }>({
         interviewerName: '',
         interviewStep: '',
         rating: 0,
-        comments: '',
+        feedback: '',
         nextStepNotes: '',
     });
 
@@ -45,24 +46,22 @@ function FeedbackForm({ candidateId, onViewFeedback }: FeedbackFormProps) {
     }, [candidateId]);
 
     function handleAddFeedback() {
-        if (!feedbackForm || !feedbackForm.comments) return alert('Enter feedback');
+        if (!feedbackForm || !feedbackForm.feedback) return alert('Enter feedback');
         setLoading(true);
-        const fb: Feedback = {
-            id: `f_${Date.now()}`,
-            candidateId,
+        const fb: CreateInterviewStageInput = {
             interviewerName: feedbackForm.interviewerName,
-            interviewStep: feedbackForm.interviewStep,
             rating: feedbackForm.rating,
-            comments: feedbackForm.comments,
+            feedback: feedbackForm.feedback,
             nextStepNotes: feedbackForm.nextStepNotes,
-            date: new Date().toISOString(),
+            name: '',
+            jobApplicationId: selectedCandidate.jobApplication.id,
         }
         onViewFeedback(candidateId)
         setFeedbackForm({
             interviewerName: '',
             interviewStep: '',
             rating: 0,
-            comments: '',
+            feedback: '',
             nextStepNotes: '',
         });
 
@@ -88,10 +87,10 @@ function FeedbackForm({ candidateId, onViewFeedback }: FeedbackFormProps) {
                     ← Back to candidate
                 </button>
                 <h2 className="text-2xl font-bold text-gray-900">
-                    Add Feedback for {selectedCandidate.name}
+                    Add Feedback for {selectedCandidate.firstName} {selectedCandidate.lastName}
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">
-                    Position: {selectedCandidate.position}
+                    Position: {selectedCandidate.jobApplication.title}
                 </p>
             </div>
 
@@ -192,11 +191,11 @@ function FeedbackForm({ candidateId, onViewFeedback }: FeedbackFormProps) {
                         <textarea
                             required
                             rows={6}
-                            value={feedbackForm.comments}
+                            value={feedbackForm.feedback}
                             onChange={(e) =>
                                 setFeedbackForm((prev) => ({
                                     ...prev,
-                                    comments: e.target.value,
+                                    feedback: e.target.value,
                                 }))
                             }
                             placeholder="Share detailed feedback about the candidate's performance, strengths, areas for improvement, specific examples from the interview..."

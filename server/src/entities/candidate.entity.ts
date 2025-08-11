@@ -7,11 +7,13 @@ import {
 	OneToMany,
 	ManyToMany,
 	ManyToOne,
+	OneToOne,
+	JoinColumn,
 } from "typeorm";
 import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
-import { InterviewProgressEntity } from "./interviewProgress.entity";
 import { CandidateHistoryEntity } from "./candidateHistory.entity";
 import { CandidateSkillEntity } from "./candidateSkill.entity";
+import { JobApplicationEntity } from "./jobApplication.entity";
 import { CandidateStatus } from "../types";
 
 registerEnumType(CandidateStatus, {
@@ -58,19 +60,19 @@ export class CandidateEntity {
 	})
 	status: CandidateStatus;
 
+	@Field(() => JobApplicationEntity)
+	@OneToOne(() => JobApplicationEntity)
+	@JoinColumn()
+	jobApplication: JobApplicationEntity;
+
+	@Field(() => CandidateSkillEntity)
+	@OneToOne(() => CandidateSkillEntity)
+	@JoinColumn()
+	candidateSkill: CandidateSkillEntity;
+
 	@Field({ nullable: true })
 	@Column({ nullable: true })
 	resumeUrl?: string;
-
-	@Field(() => CandidateSkillEntity)
-	@OneToMany(
-		() => CandidateSkillEntity,
-		(candidateSkill) => candidateSkill.candidate
-	)
-	candidateSkills: CandidateSkillEntity;
-
-	@ManyToOne(() => InterviewProgressEntity, (progress) => progress.candidate)
-	interviewProgress: InterviewProgressEntity;
 
 	@OneToMany(() => CandidateHistoryEntity, (history) => history.candidate)
 	history: CandidateHistoryEntity[];

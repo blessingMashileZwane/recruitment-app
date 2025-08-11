@@ -1,16 +1,16 @@
 import { Eye, MessageSquare, User } from "lucide-react";
-import type { Candidate } from "../../types";
+import type { CandidateOutput } from "../../types/outputs";
 
 function CandidateItem({
     candidate,
     onViewDetails,
     onViewFeedback
 }: {
-    candidate: Candidate;
+    candidate: CandidateOutput;
     onViewDetails: (id: string) => void;
     onViewFeedback: (id: string) => void;
 }) {
-    const getStatusColor = (status: Candidate['status']) => {
+    const getStatusColor = (status: CandidateOutput['status']) => {
         const colors = {
             screening: 'bg-yellow-100 text-yellow-800',
             technical: 'bg-blue-100 text-blue-800',
@@ -32,13 +32,13 @@ function CandidateItem({
                     </div>
                     <div className="ml-4">
                         <div className="flex items-center">
-                            <p className="text-sm font-medium text-gray-900">{candidate.name}</p>
+                            <p className="text-sm font-medium text-gray-900">{candidate.firstName}</p>
                             <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(candidate.status)}`}>
                                 {candidate.status}
                             </span>
                         </div>
                         <div className="mt-1">
-                            <p className="text-sm text-gray-600">{candidate.position}</p>
+                            <p className="text-sm text-gray-600">{candidate.jobApplication}</p>
                             <p className="text-xs text-gray-500">{candidate.email} • {candidate.experience} years exp</p>
                         </div>
                         <div className="mt-1 flex flex-wrap gap-1">

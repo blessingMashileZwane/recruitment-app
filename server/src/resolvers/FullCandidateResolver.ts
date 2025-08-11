@@ -3,7 +3,6 @@ import { DataSource } from "typeorm";
 import {
 	CandidateEntity,
 	CandidateSkillEntity,
-	InterviewProgressEntity,
 	InterviewStageEntity,
 	JobApplicationEntity,
 } from "../entities";
@@ -31,9 +30,6 @@ export class FullCandidateResolver {
 		const candidateRepository = this.dataSource.getRepository(CandidateEntity);
 		const candidateSkillRepository =
 			this.dataSource.getRepository(CandidateSkillEntity);
-		const interviewProgressRepository = this.dataSource.getRepository(
-			InterviewProgressEntity
-		);
 		const jobApplicationRepository =
 			this.dataSource.getRepository(JobApplicationEntity);
 		const interviewStageRepository =
@@ -44,16 +40,6 @@ export class FullCandidateResolver {
 			qualification: fullCandidate.candidateSkill.qualification,
 			proficiencyLevel: fullCandidate.candidateSkill.proficiencyLevel,
 		});
-
-		const jobApplication = jobApplicationRepository.create({
-			title: fullCandidate.jobApplication.title,
-			status: fullCandidate.jobApplication.status,
-			department: fullCandidate.jobApplication.department,
-			description: fullCandidate.jobApplication.description,
-			requirements: fullCandidate.jobApplication.requirements,
-			isActive: fullCandidate.jobApplication.isActive,
-		});
-
 		const interviewStages = fullCandidate.interviewStages.map((stage) =>
 			interviewStageRepository.create({
 				name: stage.name,
@@ -62,10 +48,14 @@ export class FullCandidateResolver {
 			})
 		);
 
-		const interviewProgress = interviewProgressRepository.create({
-			status: fullCandidate.interviewProgress.interviewStatus,
-			stage: interviewStages,
-			jobApplication: jobApplication,
+		const jobApplication = jobApplicationRepository.create({
+			title: fullCandidate.jobApplication.title,
+			status: fullCandidate.jobApplication.status,
+			department: fullCandidate.jobApplication.department,
+			description: fullCandidate.jobApplication.description,
+			requirements: fullCandidate.jobApplication.requirements,
+			isActive: fullCandidate.jobApplication.isActive,
+			interviewStages: interviewStages,
 		});
 
 		const candidate = candidateRepository.create({
@@ -77,8 +67,8 @@ export class FullCandidateResolver {
 			currentLocation: fullCandidate.currentLocation,
 			citizenship: fullCandidate.citizenship,
 			resumeUrl: fullCandidate.resumeUrl,
-			candidateSkills: candidateSkill,
-			interviewProgress: interviewProgress,
+			candidateSkill: candidateSkill,
+			jobApplication: jobApplication,
 		});
 
 		await candidateRepository.save(candidate);

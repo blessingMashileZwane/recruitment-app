@@ -1,19 +1,21 @@
 import { useEffect, useState } from "react";
 import { graphqlService } from "../../services/graphql.service";
-import type { Feedback } from "../../types";
+import type { UpdateInterviewStageInput, CreateInterviewStageInput } from "../../types/inputs";
 
 type FeedbackEditProps = {
-    candidateId: string;
-    feedbackId: string;
+    jobApplicationId: string;
+    feedbackId?: string;
     onCancel: () => void;
-    onSave: (updatedFeedback: Feedback) => void;
+    onSave: (updatedFeedback: UpdateInterviewStageInput | CreateInterviewStageInput) => void;
 };
 
-export default function ({ candidateId, feedbackId, onCancel, onSave }: FeedbackEditProps) {
+export default function ({ jobApplicationId, feedbackId, onCancel, onSave }: FeedbackEditProps) {
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState<Omit<Feedback, "id" | "candidateId" | "date">>({
+    const [formData, setFormData] = useState({
         interviewerName: "",
-        interviewStep: "",
+        name: "",
+        description: "",
+        feedback: "",
         rating: 3,
         comments: "",
         nextStepNotes: "",
@@ -28,7 +30,9 @@ export default function ({ candidateId, feedbackId, onCancel, onSave }: Feedback
                 const feedback = await graphqlService.getFeedbackById(feedbackId);
                 setFormData({
                     interviewerName: feedback.interviewerName,
-                    interviewStep: feedback.interviewStep,
+                    name: feedback.name,
+                    description: feedback.description || "",
+                    feedback: feedback.feedback,
                     rating: feedback.rating,
                     comments: feedback.comments,
                     nextStepNotes: feedback.nextStepNotes,
@@ -54,25 +58,27 @@ export default function ({ candidateId, feedbackId, onCancel, onSave }: Feedback
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.interviewerName || !formData.interviewStep) {
+        if (!formData.interviewerName || !formData.name) {
             alert("Please fill in interviewer name and interview step");
             return;
         }
 
-        const feedbackToSave: Feedback = {
-            id: feedbackId || "new-id", // or generate UUID
-            candidateId,
-            date: new Date().toISOString(),
-            ...formData,
-        };
-
         try {
             if (feedbackId) {
-                await graphqlService.updateFeedback(feedbackToSave);
+                const updateData: UpdateInterviewStageInput = {
+                    id: feedbackId,
+                    ...formData
+                };
+                await graphqlService.updateFeedback(updateData);
+                onSave(updateData);
             } else {
-                await graphqlService.addFeedback(feedbackToSave);
+                const createData: CreateInterviewStageInput = {
+                    ...formData,
+                    jobApplicationId
+                };
+                await graphqlService.addFeedback(createData);
+                onSave(createData);
             }
-            onSave(feedbackToSave);
         } catch (err) {
             console.error("Failed to save feedback", err);
             alert("Failed to save feedback");
@@ -101,11 +107,22 @@ export default function ({ candidateId, feedbackId, onCancel, onSave }: Feedback
                     <span className="text-gray-700">Interview Step</span>
                     <input
                         type="text"
-                        name="interviewStep"
-                        value={formData.interviewStep}
+                        name="name"
+                        value={formData.name}
                         onChange={handleChange}
                         required
                         placeholder="e.g. screening, technical, final"
+                        className="mt-1 block w-full border rounded p-2"
+                    />
+                </label>
+
+                <label className="block">
+                    <span className="text-gray-700">Description</span>
+                    <textarea
+                        name="description"
+                        value={formData.description}
+                        onChange={handleChange}
+                        rows={2}
                         className="mt-1 block w-full border rounded p-2"
                     />
                 </label>
@@ -124,6 +141,17 @@ export default function ({ candidateId, feedbackId, onCancel, onSave }: Feedback
                             </option>
                         ))}
                     </select>
+                </label>
+
+                <label className="block">
+                    <span className="text-gray-700">Feedback</span>
+                    <textarea
+                        name="feedback"
+                        value={formData.feedback}
+                        onChange={handleChange}
+                        rows={4}
+                        className="mt-1 block w-full border rounded p-2"
+                    />
                 </label>
 
                 <label className="block">

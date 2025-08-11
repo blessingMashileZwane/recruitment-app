@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import type { Candidate } from '../../types';
 import { graphqlService } from '../../services/graphql.service';
+import type { CandidateOutput } from '../../types/outputs';
 import CandidateItem from '../ui/CandidateItem';
 
 type CandidateListProps = {
@@ -10,7 +10,7 @@ type CandidateListProps = {
 };
 
 function CandidateList({ onViewDetails, onViewFeedback }: CandidateListProps) {
-    const [candidates, setCandidates] = useState<Candidate[]>([]);
+    const [candidates, setCandidates] = useState<CandidateOutput[]>([]);
     const [loading, setLoading] = useState(false);
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -27,16 +27,16 @@ function CandidateList({ onViewDetails, onViewFeedback }: CandidateListProps) {
     const loadCandidates = async () => {
         setLoading(true);
         try {
-            const { candidates, total, totalPages } = await graphqlService.getCandidatesList({
+            const { items, total, totalPages } = await graphqlService.getCandidatesList({
                 page: currentPage,
-                limit: itemsPerPage,
-                search: searchTerm.trim() || undefined,
-                status: statusFilter !== 'all' ? statusFilter : undefined,
-                position: positionFilter !== 'all' ? positionFilter : undefined,
-                sortBy,
-                sortOrder,
+                pageSize: itemsPerPage,
+                // search: searchTerm.trim() || undefined,
+                // status: statusFilter !== 'all' ? statusFilter : undefined,
+                // position: positionFilter !== 'all' ? positionFilter : undefined,
+                // sortBy,
+                // sortOrder,
             });
-            setCandidates(candidates);
+            setCandidates(items);
             setTotal(total);
             setTotalPages(totalPages);
         } catch (error) {
