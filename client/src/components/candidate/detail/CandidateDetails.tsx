@@ -21,6 +21,7 @@ function CandidateDetails({ candidateId, onBack, onViewFeedback, onViewEdit }: C
             setLoading(true);
             try {
                 const candidate = await graphqlService.getCandidateById(candidateId);
+                console.log("Candidate Details:", candidate);
                 setSelectedCandidate(candidate);
             } catch (error) {
                 console.error("Failed to load candidate details:", error);
@@ -101,11 +102,11 @@ function CandidateDetails({ candidateId, onBack, onViewFeedback, onViewEdit }: C
                                         </div>
                                         <div>
                                             <dt className="text-sm font-medium text-gray-500">Applied Position</dt>
-                                            <dd className="mt-1 text-sm text-gray-900">{selectedCandidate?.jobApplication.title}</dd>
+                                            <dd className="mt-1 text-sm text-gray-900">{selectedCandidate?.jobApplications.title}</dd>
                                         </div>
                                         <div>
                                             <dt className="text-sm font-medium text-gray-500">Department</dt>
-                                            <dd className="mt-1 text-sm text-gray-900">{selectedCandidate?.jobApplication.department}</dd>
+                                            <dd className="mt-1 text-sm text-gray-900">{selectedCandidate?.jobApplications.department}</dd>
                                         </div>
                                         <div className="sm:col-span-2">
                                             <dt className="text-sm font-medium text-gray-500">Skills</dt>

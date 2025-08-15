@@ -1,55 +1,58 @@
-import { Resolver, Query, Mutation, Arg, ID } from "type-graphql";
-import { CandidateEntity } from "../entities";
+import { Query, Arg, ID, Mutation, Resolver, Int } from "type-graphql";
 import { DataSource } from "typeorm";
+import { CandidateEntity } from "../entities";
 import { CandidateStatus } from "../types";
-import { CandidateListResponse } from "../types/responses";
+import { CandidateListResponse } from "../types/outputs";
 
 @Resolver(() => CandidateEntity)
 export class CandidateResolver {
 	constructor(private dataSource: DataSource) {}
 
+	private candidateRepository() {
+		return this.dataSource.getRepository(CandidateEntity);
+	}
+
 	@Query(() => CandidateListResponse)
 	async candidates(
-		@Arg("page", () => Number, { defaultValue: 1 }) page: number,
-		@Arg("limit", () => Number, { defaultValue: 10 }) limit: number,
+		@Arg("page", () => Int, { defaultValue: 1 }) page: number,
+		@Arg("limit", () => Int, { defaultValue: 10 }) limit: number,
 		@Arg("status", () => String, { nullable: true }) status?: string,
-		@Arg("search", { nullable: true }) search?: string,
-		@Arg("position", { nullable: true }) position?: string,
-		@Arg("sortBy", { nullable: true }) sortBy?: string,
-		@Arg("sortOrder", { nullable: true }) sortOrder?: string
-	): Promise<{ items: CandidateEntity[]; total: number; totalPages: number }> {
+		@Arg("search", () => String, { nullable: true }) search?: string,
+		@Arg("position", () => String, { nullable: true }) position?: string,
+		@Arg("sortBy", () => String, { nullable: true }) sortBy?: string,
+		@Arg("sortOrder", () => String, { nullable: true }) sortOrder?: string
+	): Promise<CandidateListResponse> {
 		const skip = (page - 1) * limit;
 
-		let query = this.dataSource
-			.getRepository(CandidateEntity)
-			.createQueryBuilder("candidate");
+		let query = this.candidateRepository().createQueryBuilder("candidate");
 
-		if (status) {
+		// Filters
+		if (status)
 			query = query.andWhere("candidate.status = :status", { status });
-		}
-
-		if (position) {
+		if (position)
 			query = query.andWhere("candidate.position = :position", { position });
-		}
-
 		if (search) {
 			query = query.andWhere(
-				"(candidate.name LIKE :search OR candidate.email LIKE :search)",
+				"(candidate.firstName ILIKE :search OR candidate.lastName ILIKE :search OR candidate.email ILIKE :search)",
 				{ search: `%${search}%` }
 			);
 		}
 
-		// Map client-side field names to database column names if needed
+		// Sort mapping based on entity fields
 		const fieldMap: Record<string, string> = {
-			name: "name",
-			position: "position",
-			experience: "experience",
-			addedDate: "addedDate",
+			name: "candidate.firstName",
+			position: "candidate.position",
+			experience: "candidate.experience",
+			addedDate: "candidate.createdAt",
 		};
 
 		if (sortBy && sortOrder && fieldMap[sortBy]) {
-			const order = sortOrder.toUpperCase() as "ASC" | "DESC";
-			query = query.orderBy(`candidate.${fieldMap[sortBy]}`, order);
+			query = query.orderBy(
+				fieldMap[sortBy],
+				sortOrder.toUpperCase() as "ASC" | "DESC"
+			);
+		} else {
+			query = query.orderBy("candidate.createdAt", "DESC");
 		}
 
 		const [items, total] = await Promise.all([
@@ -62,26 +65,28 @@ export class CandidateResolver {
 		return {
 			items,
 			total,
+			page,
+			pageSize: limit,
 			totalPages,
 		};
 	}
-
-	// @Query(() => [CandidateEntity])
-	// async candidatesWithPagination(
-	// 	@Arg("page", () => ID, { defaultValue: 1 }) page: number,
-	// 	@Arg("limit", () => ID, { defaultValue: 10 }) limit: number
-	// ): Promise<CandidateEntity[]> {
-	// 	const repository = this.dataSource.getRepository(CandidateEntity);
-	// 	const skip = (page - 1) * limit;
-	// 	return repository.find({ skip, take: limit });
-	// }
 
 	@Query(() => CandidateEntity, { nullable: true })
 	async candidate(
 		@Arg("id", () => ID) id: string
 	): Promise<CandidateEntity | null> {
-		const repository = this.dataSource.getRepository(CandidateEntity);
-		return repository.findOne({ where: { id } });
+		return this.candidateRepository().findOne({
+			where: { id },
+			relations: [
+				"candidateSkill",
+				"candidateSkill.history",
+				"jobApplications",
+				"jobApplications.history",
+				"jobApplications.interviewStages",
+				"jobApplications.interviewStages.history",
+				"history",
+			],
+		});
 	}
 
 	@Mutation(() => CandidateEntity)
@@ -97,8 +102,7 @@ export class CandidateResolver {
 		})
 		status?: CandidateStatus
 	): Promise<CandidateEntity> {
-		const repository = this.dataSource.getRepository(CandidateEntity);
-		const candidate = repository.create({
+		const candidate = this.candidateRepository().create({
 			firstName,
 			lastName,
 			email,
@@ -107,7 +111,7 @@ export class CandidateResolver {
 			citizenship,
 			status: status || CandidateStatus.OPEN,
 		});
-		return repository.save(candidate);
+		return this.candidateRepository().save(candidate);
 	}
 
 	@Mutation(() => CandidateEntity)
@@ -122,7 +126,7 @@ export class CandidateResolver {
 		@Arg("status", () => CandidateStatus, { nullable: true })
 		status?: CandidateStatus
 	): Promise<CandidateEntity> {
-		const repository = this.dataSource.getRepository(CandidateEntity);
+		const repository = this.candidateRepository();
 		const candidate = await repository.findOneOrFail({ where: { id } });
 
 		if (firstName) candidate.firstName = firstName;
@@ -132,13 +136,32 @@ export class CandidateResolver {
 		if (currentLocation) candidate.currentLocation = currentLocation;
 		if (citizenship) candidate.citizenship = citizenship;
 		if (status) candidate.status = status;
+
 		return repository.save(candidate);
 	}
 
 	@Mutation(() => Boolean)
 	async deleteCandidate(@Arg("id", () => ID) id: string): Promise<boolean> {
-		const repository = this.dataSource.getRepository(CandidateEntity);
-		await repository.delete(id);
+		await this.candidateRepository().delete(id);
 		return true;
+	}
+
+	// Keep fullCandidate for detailed view
+	@Query(() => CandidateEntity, { nullable: true })
+	async fullCandidate(
+		@Arg("id", () => ID) id: string
+	): Promise<CandidateEntity | null> {
+		return this.candidateRepository().findOne({
+			where: { id },
+			relations: [
+				"candidateSkill",
+				"candidateSkill.history",
+				"jobApplications",
+				"jobApplications.history",
+				"jobApplications.interviewStages",
+				"jobApplications.interviewStages.history",
+				"history",
+			],
+		});
 	}
 }

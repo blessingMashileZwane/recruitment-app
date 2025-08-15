@@ -29,7 +29,7 @@ export default function CandidateEdit({ candidateId, onCancel, onSave }: Candida
             qualification: "",
             proficiencyLevel: 1
         },
-        jobApplication: {
+        jobApplications: {
             title: "",
             appliedJob: "",
             appliedStatus: "PENDING",
@@ -40,6 +40,7 @@ export default function CandidateEdit({ candidateId, onCancel, onSave }: Candida
 
     useEffect(() => {
         const loadCandidate = async () => {
+            console.log(candidateId);
             setLoading(true);
             try {
                 const data = await graphqlService.getCandidateById(candidateId);
@@ -58,12 +59,12 @@ export default function CandidateEdit({ candidateId, onCancel, onSave }: Candida
                         qualification: data.candidateSkill.qualification,
                         proficiencyLevel: data.candidateSkill.proficiencyLevel
                     },
-                    jobApplication: {
-                        title: data.jobApplication.title,
-                        appliedJob: data.jobApplication.appliedJob || "",
-                        appliedStatus: data.jobApplication.appliedStatus || "",
-                        department: data.jobApplication.department || "",
-                        isActive: data.jobApplication.isActive
+                    jobApplications: {
+                        title: data.jobApplications.title,
+                        appliedJob: data.jobApplications.appliedJob || "",
+                        appliedStatus: data.jobApplications.appliedStatus || "",
+                        department: data.jobApplications.department || "",
+                        isActive: data.jobApplications.isActive
                     }
                 });
             } catch (err) {

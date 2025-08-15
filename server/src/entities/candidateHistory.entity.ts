@@ -75,7 +75,7 @@ export class CandidateHistoryEntity {
 
 	@Field()
 	@Column()
-	createdBy: String;
+	createdBy: string;
 
 	@BeforeInsert()
 	setAuditFieldsOnInsert() {

@@ -1,10 +1,7 @@
 import type { User } from "../types";
 import type {
-	CandidateFilterInput,
 	CreateCandidateInput,
 	CreateInterviewStageInput,
-	PaginationInput,
-	SortInput,
 	UpdateCandidateInput,
 	UpdateInterviewStageInput,
 } from "../types/inputs";
@@ -102,27 +99,30 @@ export class GraphQLService {
             createdAt
             updatedAt
           }
-          jobApplication {
+          jobApplications {
             id
             title
-            status
+            appliedJob
+            applicationStatus
             department
             description
             requirements
             isActive
             createdAt
+            createdBy
             updatedAt
+            updatedBy
             interviewStages {
               id
               name
-              description
               feedback
               interviewerName
               rating
-              comments
               nextStepNotes
+              createdBy
               createdAt
               updatedAt
+              updatedBy
             }
           }
         }
@@ -138,54 +138,60 @@ export class GraphQLService {
 		return candidate;
 	}
 
-	async getCandidates(): Promise<CandidateListResponse> {
+	async createFullCandidate(
+		candidate: CreateCandidateInput
+	): Promise<CandidateOutput> {
 		const query = `
-      query GetCandidates {
-        candidates {
-          items {
-            id
-            firstName
-            lastName
-            email
-            phone
-            currentLocation
-            citizenship
-            status
-            resumeUrl
-            createdAt
-            updatedAt
-            candidateSkill {
-              id
-              university
-              qualification
-              proficiencyLevel
-              createdAt
-              updatedAt
-            }
-            jobApplication {
-              id
-              title
-              status
-              department
-              description
-              requirements
-              isActive
-              createdAt
-              updatedAt
-            }
-          }
-          total
-          page
-          pageSize
-          totalPages
+    mutation CreateFullCandidate($fullCandidate: CreateCandidateInput!) {
+      createFullCandidate(fullCandidate: $fullCandidate) {
+        id
+        firstName
+        lastName
+        email
+        phone
+        currentLocation
+        citizenship
+        status
+        resumeUrl
+        createdAt
+        updatedAt
+        createdBy
+        updatedBy
+        candidateSkill {
+          id
+          university
+          qualification
+          proficiencyLevel
+          yearsOfExperience
+          createdAt
+          updatedAt
+          createdBy
+          updatedBy
+        }
+        jobApplications {
+          id
+          title
+          appliedJob
+          applicationStatus
+          department
+          requirements
+          isActive
+          createdAt
+          updatedAt
+          createdBy
+          updatedBy
         }
       }
-    `;
+    }
+  `;
 
-		const { candidates } = await this.query<{
-			candidates: CandidateListResponse;
-		}>(query);
-		return candidates;
+		console.log({ candidate });
+
+		const { createFullCandidate } = await this.query<{
+			createFullCandidate: CandidateOutput;
+		}>(query, { fullCandidate: candidate });
+
+		return createFullCandidate;
 	}
 
 	async addCandidate(
@@ -380,64 +386,69 @@ export class GraphQLService {
 	}
 
 	async getCandidatesList(
-		pagination: PaginationInput,
-		filter?: CandidateFilterInput,
-		sort?: SortInput
+		page?: number,
+		limit?: number,
+		status?: string,
+		search?: string,
+		position?: string,
+		sortBy?: string,
+		sortOrder?: string
 	): Promise<CandidateListResponse> {
 		const query = `
-      query GetCandidatesList(
-        $pagination: PaginationInput!
-        $filter: CandidateFilterInput
-        $sort: SortInput
+    query GetCandidates(
+      $page: Int!
+      $limit: Int!
+      $status: String
+      $search: String
+      $position: String
+      $sortBy: String
+      $sortOrder: String
+    ) {
+      candidates(
+        page: $page
+        limit: $limit
+        status: $status
+        search: $search
+        position: $position
+        sortBy: $sortBy
+        sortOrder: $sortOrder
       ) {
-        candidates(pagination: $pagination, filter: $filter, sort: $sort) {
-          items {
-            id
-            firstName
-            lastName
-            email
-            phone
-            currentLocation
-            citizenship
-            status
-            resumeUrl
-            createdAt
-            updatedAt
-            candidateSkill {
-              id
-              university
-              qualification
-              proficiencyLevel
-              createdAt
-              updatedAt
-            }
-            jobApplication {
-              id
-              title
-              status
-              department
-              description
-              requirements
-              isActive
-              createdAt
-              updatedAt
-            }
-          }
-          total
-          page
-          pageSize
-          totalPages
+        items {
+          id
+          firstName
+          lastName
+          email
+          phone
+          currentLocation
+          citizenship
+          status
+          resumeUrl
+          createdAt
+          updatedAt
+          createdBy
+          updatedBy
         }
+        total
+        page
+        pageSize
+        totalPages
       }
-    `;
+    }
+  `;
+
+		const variables = {
+			page: Number(page ?? 1),
+			limit: Number(limit ?? 10),
+			status: status ?? null,
+			search: search ?? null,
+			position: position ?? null,
+			sortBy: sortBy ?? null,
+			sortOrder: sortOrder ?? null,
+		};
 
 		const { candidates } = await this.query<{
 			candidates: CandidateListResponse;
-		}>(query, {
-			pagination,
-			filter,
-			sort,
-		});
+		}>(query, variables);
 
 		return candidates;
 	}

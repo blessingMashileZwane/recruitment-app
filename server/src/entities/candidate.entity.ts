@@ -1,23 +1,21 @@
+import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
 import {
-	Entity,
-	PrimaryGeneratedColumn,
-	Column,
-	CreateDateColumn,
-	UpdateDateColumn,
-	OneToMany,
-	ManyToMany,
-	ManyToOne,
-	OneToOne,
-	JoinColumn,
 	BeforeInsert,
 	BeforeUpdate,
+	Column,
+	CreateDateColumn,
+	Entity,
+	JoinColumn,
+	OneToMany,
+	OneToOne,
+	PrimaryGeneratedColumn,
+	UpdateDateColumn,
 } from "typeorm";
-import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
+import { userContext } from "../middleware";
+import { CandidateStatus } from "../types";
 import { CandidateHistoryEntity } from "./candidateHistory.entity";
 import { CandidateSkillEntity } from "./candidateSkill.entity";
 import { JobApplicationEntity } from "./jobApplication.entity";
-import { CandidateStatus } from "../types";
-import { userContext } from "../middleware";
 
 registerEnumType(CandidateStatus, {
 	name: "CandidateStatus",
@@ -61,7 +59,7 @@ export class CandidateEntity {
 		enum: CandidateStatus,
 		default: CandidateStatus.OPEN,
 	})
-	status?: CandidateStatus;
+	status: CandidateStatus;
 
 	@Field(() => [JobApplicationEntity])
 	@OneToMany(() => JobApplicationEntity, (application) => application.candidate)
@@ -84,8 +82,8 @@ export class CandidateEntity {
 	createdAt: Date;
 
 	@Field()
-	@Column()
-	createdBy: String;
+	@Column({ nullable: true })
+	createdBy: string;
 
 	@Field()
 	@UpdateDateColumn()
@@ -93,7 +91,7 @@ export class CandidateEntity {
 
 	@Field()
 	@Column()
-	updatedBy: String;
+	updatedBy: string;
 
 	@BeforeInsert()
 	setAuditFieldsOnInsert() {

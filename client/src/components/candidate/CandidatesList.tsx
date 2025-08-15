@@ -27,15 +27,15 @@ function CandidateList({ onViewDetails, onViewFeedback }: CandidateListProps) {
     const loadCandidates = async () => {
         setLoading(true);
         try {
-            const { items, total, totalPages } = await graphqlService.getCandidatesList({
-                page: currentPage,
-                pageSize: itemsPerPage,
-                // search: searchTerm.trim() || undefined,
-                // status: statusFilter !== 'all' ? statusFilter : undefined,
-                // position: positionFilter !== 'all' ? positionFilter : undefined,
-                // sortBy,
-                // sortOrder,
-            });
+            const { items, total, totalPages } = await graphqlService.getCandidatesList(
+                currentPage,
+                itemsPerPage,
+                statusFilter !== 'all' ? statusFilter : undefined,
+                searchTerm.trim() || undefined,
+                positionFilter !== 'all' ? positionFilter : undefined,
+                sortBy,
+                sortOrder
+            );
             setCandidates(items);
             setTotal(total);
             setTotalPages(totalPages);

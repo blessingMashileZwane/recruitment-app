@@ -79,7 +79,7 @@ export class JobApplicationHistoryEntity {
 
 	@Field()
 	@Column()
-	createdBy: String;
+	createdBy: string;
 
 	@BeforeInsert()
 	setAuditFieldsOnInsert() {

@@ -1,13 +1,13 @@
 export const CandidateStatus = {
-	OPEN: "open",
-	CLOSED: "closed",
+	OPEN: "OPEN",
+	CLOSED: "CLOSED",
 } as const;
 
 export const AppliedJobStatus = {
-	ACTIVE: "active",
-	HIRED: "hired",
-	REJECTED: "rejected",
-	WITHDRAWN: "withdrawn",
+	ACTIVE: "ACTIVE",
+	HIRED: "HIRED",
+	REJECTED: "REJECTED",
+	WITHDRAWN: "WITHDRAWN",
 } as const;
 
 export type AppliedJobStatus =

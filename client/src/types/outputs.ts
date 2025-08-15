@@ -46,9 +46,11 @@ export interface CandidateOutput {
 	status: CandidateStatus;
 	resumeUrl?: string;
 	candidateSkill: CandidateSkillOutput;
-	jobApplication: JobApplicationOutput;
+	jobApplications: JobApplicationOutput;
 	createdAt: string;
 	updatedAt: string;
+	createdBy: string;
+	updatedBy: string;
 }
 
 export interface CandidateListResponse {

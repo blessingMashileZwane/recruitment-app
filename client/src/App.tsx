@@ -5,7 +5,7 @@ import { useAuth } from './auth/AuthProvider';
 import CandidatesList from './components/candidate/CandidatesList';
 import CandidateDetails from './components/candidate/detail/CandidateDetails';
 import CandidateEdit from './components/candidate/detail/CandidateEdit';
-import CandidateForm from './components/candidate/detail/CandidateForm';
+import CandidateForm from './components/candidate/form/CandidateForm';
 import FeedbackForm from './components/feedback/FeedbackForm';
 import FeedbackHistory from './components/feedback/FeedbackHistory';
 import Login from './components/Login';
@@ -102,7 +102,11 @@ function App() {
                 return <CandidateForm />
 
               case "edit-candidate":
-                return <CandidateEdit candidateId={''} onCancel={(id) => {
+                if (!selectedCandidateId) {
+                  setCurrentView({ view: "candidates" });
+                  return null;
+                }
+                return <CandidateEdit candidateId={selectedCandidateId} onCancel={(id) => {
                   setCurrentView({ view: 'candidate-details', candidateId: id })
                 }} onSave={(updatedCandidate) => {
                   setCurrentView({ view: 'candidate-details', candidateId: updatedCandidate.id })
@@ -122,6 +126,7 @@ function App() {
                       setCurrentView({ view: "feedback-history", candidateId: id });
                     }}
                     onViewEdit={(id) => {
+                      console.log("Edit Candidate:", id);
                       setSelectedCandidateId(id);
                       setCurrentView({ view: "edit-candidate", candidateId: id });
                     }}

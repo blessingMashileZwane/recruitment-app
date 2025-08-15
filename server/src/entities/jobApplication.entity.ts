@@ -91,7 +91,7 @@ export class JobApplicationEntity {
 
 	@Field()
 	@Column({ nullable: true })
-	createdBy: String;
+	createdBy: string;
 
 	@Field()
 	@UpdateDateColumn()
@@ -99,7 +99,7 @@ export class JobApplicationEntity {
 
 	@Field()
 	@Column({ nullable: true })
-	updatedBy: String;
+	updatedBy: string;
 
 	@BeforeInsert()
 	setAuditFieldsOnInsert() {

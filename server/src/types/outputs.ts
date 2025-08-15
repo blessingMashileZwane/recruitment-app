@@ -20,6 +20,12 @@ export class CandidateSkillOutput {
 
 	@Field()
 	updatedAt: Date;
+
+	@Field()
+	createdBy: string;
+
+	@Field()
+	updatedBy: string;
 }
 
 @ObjectType()
@@ -53,6 +59,12 @@ export class InterviewStageOutput {
 
 	@Field()
 	updatedAt: Date;
+
+	@Field()
+	createdBy: string;
+
+	@Field()
+	updatedBy: string;
 }
 
 @ObjectType()
@@ -86,6 +98,12 @@ export class JobApplicationOutput {
 
 	@Field()
 	updatedAt: Date;
+
+	@Field()
+	createdBy: string;
+
+	@Field()
+	updatedBy: string;
 }
 
 @ObjectType()
@@ -128,12 +146,60 @@ export class CandidateOutput {
 
 	@Field()
 	updatedAt: Date;
+
+	@Field()
+	createdBy: string;
+
+	@Field()
+	updatedBy: string;
+}
+
+@ObjectType()
+export class CandidateBasicOutput {
+	@Field(() => ID)
+	id: string;
+
+	@Field()
+	firstName: string;
+
+	@Field()
+	lastName: string;
+
+	@Field()
+	email: string;
+
+	@Field({ nullable: true })
+	phone?: string;
+
+	@Field({ nullable: true })
+	currentLocation?: string;
+
+	@Field({ nullable: true })
+	citizenship?: string;
+
+	@Field(() => CandidateStatus)
+	status: CandidateStatus;
+
+	@Field({ nullable: true })
+	resumeUrl?: string;
+
+	@Field()
+	createdAt: Date;
+
+	@Field()
+	updatedAt: Date;
+
+	@Field()
+	createdBy: string;
+
+	@Field()
+	updatedBy: string;
 }
 
 @ObjectType()
 export class CandidateListResponse {
-	@Field(() => [CandidateOutput])
-	items: CandidateOutput[];
+	@Field(() => [CandidateBasicOutput])
+	items: CandidateBasicOutput[];
 
 	@Field()
 	total: number;
