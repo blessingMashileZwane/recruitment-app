@@ -5,10 +5,13 @@ import {
 	CreateDateColumn,
 	ManyToOne,
 	JoinColumn,
+	BeforeInsert,
+	BeforeUpdate,
 } from "typeorm";
 import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
 import { JobApplicationEntity } from "./jobApplication.entity";
 import { AppliedJob, AppliedJobStatus } from "../types";
+import { userContext } from "../middleware";
 
 registerEnumType(AppliedJob, {
 	name: "AppliedJob",
@@ -75,6 +78,13 @@ export class JobApplicationHistoryEntity {
 	createdAt: Date;
 
 	@Field()
-	@Column({ nullable: true })
+	@Column()
 	createdBy: String;
+
+	@BeforeInsert()
+	setAuditFieldsOnInsert() {
+		const ctx = userContext.getStore();
+		const userId = ctx?.userId ?? "system";
+		this.createdBy = userId;
+	}
 }

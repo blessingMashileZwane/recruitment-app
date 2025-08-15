@@ -5,9 +5,11 @@ import {
 	CreateDateColumn,
 	ManyToOne,
 	JoinColumn,
+	BeforeInsert,
 } from "typeorm";
 import { Field, ID, ObjectType } from "type-graphql";
 import { InterviewStageEntity } from "./interviewStage.entity";
+import { userContext } from "../middleware";
 
 @ObjectType()
 @Entity("interview_stage_history")
@@ -56,4 +58,11 @@ export class InterviewStageHistoryEntity {
 	@Field()
 	@Column({ nullable: true })
 	createdBy: string;
+
+	@BeforeInsert()
+	setAuditFieldsOnInsert() {
+		const ctx = userContext.getStore();
+		const userId = ctx?.userId ?? "system";
+		this.createdBy = userId;
+	}
 }

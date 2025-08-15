@@ -1,5 +1,7 @@
 import { Field, ID, ObjectType } from "type-graphql";
 import {
+	BeforeInsert,
+	BeforeUpdate,
 	Column,
 	CreateDateColumn,
 	Entity,
@@ -12,6 +14,7 @@ import {
 } from "typeorm";
 import { CandidateEntity } from "./candidate.entity";
 import { CandidateSkillHistoryEntity } from "./candidateSkillHistory.entity";
+import { userContext } from "../middleware";
 
 @ObjectType()
 @Entity("candidate_skills")
@@ -57,7 +60,7 @@ export class CandidateSkillEntity {
 	createdAt: Date;
 
 	@Field()
-	@Column({ nullable: true })
+	@Column()
 	createdBy: string;
 
 	@Field()
@@ -65,6 +68,21 @@ export class CandidateSkillEntity {
 	updatedAt: Date;
 
 	@Field()
-	@Column({ nullable: true })
+	@Column()
 	updatedBy: string;
+
+	@BeforeInsert()
+	setAuditFieldsOnInsert() {
+		const ctx = userContext.getStore();
+		const userId = ctx?.userId ?? "system";
+		this.createdBy = userId;
+		this.updatedBy = userId;
+	}
+
+	@BeforeUpdate()
+	setAuditFieldsOnUpdate() {
+		const ctx = userContext.getStore();
+		const userId = ctx?.userId ?? "system";
+		this.updatedBy = userId;
+	}
 }

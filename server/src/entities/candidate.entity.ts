@@ -9,12 +9,15 @@ import {
 	ManyToOne,
 	OneToOne,
 	JoinColumn,
+	BeforeInsert,
+	BeforeUpdate,
 } from "typeorm";
 import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
 import { CandidateHistoryEntity } from "./candidateHistory.entity";
 import { CandidateSkillEntity } from "./candidateSkill.entity";
 import { JobApplicationEntity } from "./jobApplication.entity";
 import { CandidateStatus } from "../types";
+import { userContext } from "../middleware";
 
 registerEnumType(CandidateStatus, {
 	name: "CandidateStatus",
@@ -81,7 +84,7 @@ export class CandidateEntity {
 	createdAt: Date;
 
 	@Field()
-	@Column({ nullable: true })
+	@Column()
 	createdBy: String;
 
 	@Field()
@@ -89,6 +92,21 @@ export class CandidateEntity {
 	updatedAt: Date;
 
 	@Field()
-	@Column({ nullable: true })
+	@Column()
 	updatedBy: String;
+
+	@BeforeInsert()
+	setAuditFieldsOnInsert() {
+		const ctx = userContext.getStore();
+		const userId = ctx?.userId ?? "system";
+		this.createdBy = userId;
+		this.updatedBy = userId;
+	}
+
+	@BeforeUpdate()
+	setAuditFieldsOnUpdate() {
+		const ctx = userContext.getStore();
+		const userId = ctx?.userId ?? "system";
+		this.updatedBy = userId;
+	}
 }

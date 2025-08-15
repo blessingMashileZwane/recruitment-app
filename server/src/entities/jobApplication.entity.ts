@@ -7,12 +7,15 @@ import {
 	OneToMany,
 	ManyToOne,
 	OneToOne,
+	BeforeInsert,
+	BeforeUpdate,
 } from "typeorm";
 import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
 import { JobApplicationHistoryEntity } from "./jobApplicationHistory.entity";
 import { InterviewStageEntity } from "./interviewStage.entity";
 import { AppliedJob, AppliedJobStatus } from "../types";
 import { CandidateEntity } from "./candidate.entity";
+import { userContext } from "../middleware";
 
 registerEnumType(AppliedJob, {
 	name: "AppliedJob",
@@ -97,4 +100,19 @@ export class JobApplicationEntity {
 	@Field()
 	@Column({ nullable: true })
 	updatedBy: String;
+
+	@BeforeInsert()
+	setAuditFieldsOnInsert() {
+		const ctx = userContext.getStore();
+		const userId = ctx?.userId ?? "system";
+		this.createdBy = userId;
+		this.updatedBy = userId;
+	}
+
+	@BeforeUpdate()
+	setAuditFieldsOnUpdate() {
+		const ctx = userContext.getStore();
+		const userId = ctx?.userId ?? "system";
+		this.updatedBy = userId;
+	}
 }

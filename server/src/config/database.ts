@@ -10,6 +10,7 @@ import {
 	InterviewStageHistoryEntity,
 } from "../entities";
 import { AuditSubscriber } from "../subscribers";
+import { AddAuditFields1692123456789 } from "../migrations/AddAuditFields1692123456789";
 
 export async function getDataSource() {
 	const AppDataSource = new DataSource({
@@ -30,7 +31,8 @@ export async function getDataSource() {
 			JobApplicationHistoryEntity,
 		],
 		subscribers: [AuditSubscriber],
-		synchronize: true,
+		migrations: [AddAuditFields1692123456789],
+		synchronize: false,
 		dropSchema: false,
 		logging: true,
 	});

@@ -15,14 +15,22 @@ export function getCurrentUserId(): string | undefined {
 	return userContext.getStore()?.userId;
 }
 
-export function buildContext({ req }: { req: Request }): MyContext {
+export async function buildContext({ req }: { req: Request }) {
 	const authHeader = req.headers.authorization || "";
 	const token = authHeader.replace("Bearer ", "");
 
+	let userId = "system";
+	let role: "ADMIN" | "USER" | "GUEST" = "GUEST";
+
 	try {
 		const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-		return { user: { id: decoded.sub, role: decoded.role } };
-	} catch {
-		return {};
-	}
+		userId = decoded.sub ?? decoded.userId ?? "system";
+		role = decoded.role ?? "GUEST";
+	} catch {}
+
+	return await new Promise((resolve) => {
+		userContext.run({ userId }, () => {
+			resolve({ user: { id: userId, role } });
+		});
+	});
 }
