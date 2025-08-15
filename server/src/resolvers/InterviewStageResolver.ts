@@ -35,10 +35,18 @@ export class InterviewStageResolver {
 	async createInterviewStage(
 		@Arg("name") name: string,
 		@Arg("feedback") feedback: string,
-		@Arg("description", { nullable: true }) description?: string
+		@Arg("interviewerName") interviewerName: string,
+		@Arg("rating") rating: number,
+		@Arg("nextStepNotes") nextStepNotes: string
 	): Promise<InterviewStageEntity> {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
-		const stage = repository.create({ name, feedback, description });
+		const stage = repository.create({
+			name,
+			feedback,
+			interviewerName,
+			rating,
+			nextStepNotes,
+		});
 		return repository.save(stage);
 	}
 
@@ -47,14 +55,18 @@ export class InterviewStageResolver {
 		@Arg("id", () => ID) id: string,
 		@Arg("name", { nullable: true }) name?: string,
 		@Arg("feedback", { nullable: true }) feedback?: string,
-		@Arg("description", { nullable: true }) description?: string
+		@Arg("interviewerName", { nullable: true }) interviewerName?: string,
+		@Arg("rating", { nullable: true }) rating?: number,
+		@Arg("nextStepNotes", { nullable: true }) nextStepNotes?: string
 	): Promise<InterviewStageEntity> {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
 		const stage = await repository.findOneOrFail({ where: { id } });
 
 		if (name) stage.name = name;
 		if (feedback !== undefined) stage.feedback = feedback;
-		if (description !== undefined) stage.description = description;
+		if (interviewerName !== undefined) stage.interviewerName = interviewerName;
+		if (rating !== undefined) stage.rating = rating;
+		if (nextStepNotes !== undefined) stage.nextStepNotes = nextStepNotes;
 
 		return repository.save(stage);
 	}
@@ -64,7 +76,9 @@ export class InterviewStageResolver {
 		@Arg("candidateId", () => ID) candidateId: string,
 		@Arg("name", { nullable: true }) name?: string,
 		@Arg("feedback", { nullable: true }) feedback?: string,
-		@Arg("description", { nullable: true }) description?: string
+		@Arg("interviewerName", { nullable: true }) interviewerName?: string,
+		@Arg("rating", { nullable: true }) rating?: number,
+		@Arg("nextStepNotes", { nullable: true }) nextStepNotes?: string
 	): Promise<InterviewStageEntity> {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
 		const stage = await repository.findOneOrFail({
@@ -74,7 +88,9 @@ export class InterviewStageResolver {
 
 		if (name) stage.name = name;
 		if (feedback !== undefined) stage.feedback = feedback;
-		if (description !== undefined) stage.description = description;
+		if (interviewerName !== undefined) stage.interviewerName = interviewerName;
+		if (rating !== undefined) stage.rating = rating;
+		if (nextStepNotes !== undefined) stage.nextStepNotes = nextStepNotes;
 
 		return repository.save(stage);
 	}

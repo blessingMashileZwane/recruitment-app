@@ -43,14 +43,17 @@ export class FullCandidateResolver {
 		const interviewStages = fullCandidate.interviewStages.map((stage) =>
 			interviewStageRepository.create({
 				name: stage.name,
-				description: stage.description,
 				feedback: stage.feedback,
+				interviewerName: stage.interviewerName,
+				rating: stage.rating,
+				nextStepNotes: stage.nextStepNotes,
 			})
 		);
 
 		const jobApplication = jobApplicationRepository.create({
 			title: fullCandidate.jobApplication.title,
-			status: fullCandidate.jobApplication.status,
+			appliedJob: fullCandidate.jobApplication.appliedJob,
+			applicationStatus: fullCandidate.jobApplication.applicationStatus,
 			department: fullCandidate.jobApplication.department,
 			description: fullCandidate.jobApplication.description,
 			requirements: fullCandidate.jobApplication.requirements,
@@ -68,7 +71,7 @@ export class FullCandidateResolver {
 			citizenship: fullCandidate.citizenship,
 			resumeUrl: fullCandidate.resumeUrl,
 			candidateSkill: candidateSkill,
-			jobApplication: jobApplication,
+			jobApplications: [jobApplication],
 		});
 
 		await candidateRepository.save(candidate);
