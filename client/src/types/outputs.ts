@@ -5,33 +5,39 @@ export interface CandidateSkillOutput {
 	university: string;
 	qualification: string;
 	proficiencyLevel: number;
+	yearsOfExperience: number;
 	createdAt: string;
 	updatedAt: string;
+	createdBy: string;
+	updatedBy: string;
 }
 
 export interface InterviewStageOutput {
 	id: string;
 	name: string;
-	description?: string;
 	feedback: string;
 	interviewerName: string;
 	rating: number;
-	comments: string;
 	nextStepNotes: string;
 	createdAt: string;
 	updatedAt: string;
+	createdBy: string;
+	updatedBy: string;
 }
 
 export interface JobApplicationOutput {
 	id: string;
 	title: string;
 	appliedJob?: AppliedJob;
-	appliedStatus?: AppliedJobStatus;
+	applicationStatus?: AppliedJobStatus;
+	department?: string;
 	requirements?: string;
 	isActive: boolean;
 	interviewStages: InterviewStageOutput[];
 	createdAt: string;
 	updatedAt: string;
+	createdBy: string;
+	updatedBy: string;
 }
 
 export interface CandidateOutput {
@@ -45,7 +51,7 @@ export interface CandidateOutput {
 	status: CandidateStatus;
 	resumeUrl?: string;
 	candidateSkill: CandidateSkillOutput;
-	jobApplications: JobApplicationOutput;
+	jobApplications: JobApplicationOutput[];
 	createdAt: string;
 	updatedAt: string;
 	createdBy: string;

@@ -54,6 +54,7 @@ export class CreateJobApplicationInput {
 	@Field({ defaultValue: true })
 	isActive: boolean;
 }
+
 @InputType()
 export class CreateCandidateInput {
 	@Field()

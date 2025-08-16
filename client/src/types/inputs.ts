@@ -6,6 +6,13 @@ export interface CreateCandidateSkillInput {
 	proficiencyLevel: number;
 }
 
+export interface UpdateCandidateSkillInput {
+	id: string;
+	university?: string;
+	qualification?: string;
+	proficiencyLevel?: number;
+}
+
 export interface CreateInterviewStageInput {
 	name: string;
 	feedback: string;
@@ -15,13 +22,32 @@ export interface CreateInterviewStageInput {
 	jobApplicationId: string;
 }
 
+export interface UpdateInterviewStageInput {
+	id: string;
+	name?: string;
+	feedback?: string;
+	interviewerName?: string;
+	rating?: number;
+	nextStepNotes?: string;
+}
+
 export interface CreateJobApplicationInput {
 	title: string;
 	appliedJob?: AppliedJob;
-	appliedStatus?: AppliedJobStatus;
+	applicationStatus?: AppliedJobStatus;
 	department?: string;
 	requirements?: string;
 	isActive: boolean;
+}
+
+export interface UpdateJobApplicationInput {
+	id: string;
+	title?: string;
+	appliedJob?: AppliedJob;
+	applicationStatus?: AppliedJobStatus;
+	department?: string;
+	requirements?: string;
+	isActive?: boolean;
 }
 
 export interface CreateCandidateInput {
@@ -34,33 +60,7 @@ export interface CreateCandidateInput {
 	status: CandidateStatus;
 	resumeUrl?: string;
 	candidateSkill: CreateCandidateSkillInput;
-	jobApplication: CreateJobApplicationInput;
-}
-
-export interface UpdateCandidateSkillInput {
-	id: string;
-	university?: string;
-	qualification?: string;
-	proficiencyLevel?: number;
-}
-
-export interface UpdateInterviewStageInput {
-	id: string;
-	name?: string;
-	feedback?: string;
-	interviewerName?: string;
-	rating?: number;
-	nextStepNotes?: string;
-}
-
-export interface UpdateJobApplicationInput {
-	id: string;
-	title?: string;
-	appliedJob?: AppliedJob;
-	appliedStatus?: AppliedJobStatus;
-	department?: string;
-	requirements?: string;
-	isActive?: boolean;
+	jobApplications: CreateJobApplicationInput[];
 }
 
 export interface UpdateCandidateInput {

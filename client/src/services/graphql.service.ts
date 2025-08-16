@@ -1,14 +1,20 @@
 import type { User } from "../types";
 import type {
 	CreateCandidateInput,
+	CreateCandidateSkillInput,
 	CreateInterviewStageInput,
+	CreateJobApplicationInput,
 	UpdateCandidateInput,
+	UpdateCandidateSkillInput,
 	UpdateInterviewStageInput,
+	UpdateJobApplicationInput,
 } from "../types/inputs";
 import type {
 	CandidateListResponse,
 	CandidateOutput,
+	CandidateSkillOutput,
 	InterviewStageOutput,
+	JobApplicationOutput,
 } from "../types/outputs";
 
 export class GraphQLService {
@@ -74,6 +80,74 @@ export class GraphQLService {
 
 		const { loginSSO } = await this.query<{ loginSSO: User }>(query);
 		return loginSSO;
+	}
+
+	async getCandidatesList(
+		page?: number,
+		limit?: number,
+		status?: string,
+		search?: string,
+		position?: string,
+		sortBy?: string,
+		sortOrder?: string
+	): Promise<CandidateListResponse> {
+		const query = `
+    query GetCandidates(
+      $page: Int!
+      $limit: Int!
+      $status: String
+      $search: String
+      $position: String
+      $sortBy: String
+      $sortOrder: String
+    ) {
+      candidates(
+        page: $page
+        limit: $limit
+        status: $status
+        search: $search
+        position: $position
+        sortBy: $sortBy
+        sortOrder: $sortOrder
+      ) {
+        items {
+          id
+          firstName
+          lastName
+          email
+          phone
+          currentLocation
+          citizenship
+          status
+          resumeUrl
+          createdAt
+          updatedAt
+          createdBy
+          updatedBy
+        }
+        total
+        page
+        pageSize
+        totalPages
+      }
+    }
+  `;
+
+		const variables = {
+			page: Number(page ?? 1),
+			limit: Number(limit ?? 10),
+			status: status ?? null,
+			search: search ?? null,
+			position: position ?? null,
+			sortBy: sortBy ?? null,
+			sortOrder: sortOrder ?? null,
+		};
+
+		const { candidates } = await this.query<{
+			candidates: CandidateListResponse;
+		}>(query, variables);
+
+		return candidates;
 	}
 
 	async getCandidateById(id: string): Promise<CandidateOutput> {
@@ -185,235 +259,20 @@ export class GraphQLService {
     }
   `;
 
-		console.log({ candidate });
-
 		const { createFullCandidate } = await this.query<{
 			createFullCandidate: CandidateOutput;
 		}>(query, { fullCandidate: candidate });
-
 		return createFullCandidate;
 	}
 
-	async addCandidate(
-		candidate: CreateCandidateInput
-	): Promise<CandidateOutput> {
+	async addCandidatesBulk(candidates: CreateCandidateInput[]): Promise<{
+		success: CandidateOutput[];
+		failed: { email: string; reason: string }[];
+	}> {
 		const query = `
-      mutation CreateCandidate($input: CreateCandidateInput!) {
-        createCandidate(input: $input) {
-          id
-          firstName
-          lastName
-          email
-          phone
-          currentLocation
-          citizenship
-          status
-          resumeUrl
-          createdAt
-          updatedAt
-          candidateSkill {
-            id
-            university
-            qualification
-            proficiencyLevel
-            createdAt
-            updatedAt
-          }
-          jobApplication {
-            id
-            title
-            status
-            department
-            description
-            requirements
-            isActive
-            createdAt
-            updatedAt
-          }
-        }
-      }
-    `;
-
-		const { createCandidate } = await this.query<{
-			createCandidate: CandidateOutput;
-		}>(query, { input: candidate });
-		return createCandidate;
-	}
-
-	async getFeedback(candidateId: string): Promise<InterviewStageOutput[]> {
-		const query = `
-      query GetFeedback($candidateId: ID!) {
-        feedback(candidateId: $candidateId) {
-          id
-          candidateId
-          interviewerName
-          interviewStep
-          rating
-          comments
-          nextStepNotes
-          date
-        }
-      }
-    `;
-
-		const { feedback } = await this.query<{ feedback: InterviewStageOutput[] }>(
-			query,
-			{
-				candidateId,
-			}
-		);
-		return feedback;
-	}
-
-	async getFeedbackById(feedbackId: string): Promise<InterviewStageOutput> {
-		const query = `
-      query GetFeedbackById($id: ID!) {
-        feedbackById(id: $id) {
-          id
-          candidateId
-          interviewerName
-          interviewStep
-          rating
-          comments
-          nextStepNotes
-          date
-        }
-      }
-    `;
-
-		const { feedbackById } = await this.query<{
-			feedbackById: InterviewStageOutput;
-		}>(query, { id: feedbackId });
-		return feedbackById;
-	}
-
-	async addFeedback(
-		feedback: Omit<CreateInterviewStageInput, "id" | "date">
-	): Promise<InterviewStageOutput> {
-		const query = `
-      mutation CreateFeedback($input: FeedbackInput!) {
-        createFeedback(input: $input) {
-          id
-          candidateId
-          interviewerName
-          interviewStep
-          rating
-          comments
-          nextStepNotes
-          date
-        }
-      }
-    `;
-
-		const { createFeedback } = await this.query<{
-			createFeedback: InterviewStageOutput;
-		}>(query, { input: feedback });
-		return createFeedback;
-	}
-
-	async updateFeedback(
-		feedback: Omit<UpdateInterviewStageInput, "date">
-	): Promise<InterviewStageOutput> {
-		const query = `
-      mutation UpdateFeedback($id: ID!, $input: FeedbackInput!) {
-        updateFeedback(id: $id, input: $input) {
-          id
-          candidateId
-          interviewerName
-          interviewStep
-          rating
-          comments
-          nextStepNotes
-          date
-        }
-      }
-    `;
-
-		const { updateFeedback } = await this.query<{
-			updateFeedback: InterviewStageOutput;
-		}>(query, {
-			id: feedback.id,
-			input: { ...feedback, id: undefined },
-		});
-		return updateFeedback;
-	}
-
-	async updateCandidate(
-		candidate: UpdateCandidateInput
-	): Promise<CandidateOutput> {
-		const query = `
-      mutation UpdateCandidate($input: UpdateCandidateInput!) {
-        updateCandidate(input: $input) {
-          id
-          firstName
-          lastName
-          email
-          phone
-          currentLocation
-          citizenship
-          status
-          resumeUrl
-          createdAt
-          updatedAt
-          candidateSkill {
-            id
-            university
-            qualification
-            proficiencyLevel
-            createdAt
-            updatedAt
-          }
-          jobApplication {
-            id
-            title
-            status
-            department
-            description
-            requirements
-            isActive
-            createdAt
-            updatedAt
-          }
-        }
-      }
-    `;
-
-		const { updateCandidate } = await this.query<{
-			updateCandidate: CandidateOutput;
-		}>(query, { input: candidate });
-
-		return updateCandidate;
-	}
-
-	async getCandidatesList(
-		page?: number,
-		limit?: number,
-		status?: string,
-		search?: string,
-		position?: string,
-		sortBy?: string,
-		sortOrder?: string
-	): Promise<CandidateListResponse> {
-		const query = `
-    query GetCandidates(
-      $page: Int!
-      $limit: Int!
-      $status: String
-      $search: String
-      $position: String
-      $sortBy: String
-      $sortOrder: String
-    ) {
-      candidates(
-        page: $page
-        limit: $limit
-        status: $status
-        search: $search
-        position: $position
-        sortBy: $sortBy
-        sortOrder: $sortOrder
-      ) {
-        items {
+    mutation BulkCreateCandidates($fullCandidates: [CreateCandidateInput!]!) {
+      bulkCreateCandidates(input: $fullCandidates) {
+        success {
           id
           firstName
           lastName
@@ -427,87 +286,366 @@ export class GraphQLService {
           updatedAt
           createdBy
           updatedBy
+          candidateSkill {
+            id
+            university
+            qualification
+            proficiencyLevel
+            yearsOfExperience
+            createdAt
+            updatedAt
+            createdBy
+            updatedBy
+          }
+          jobApplications {
+            id
+            title
+            appliedJob
+            applicationStatus
+            department
+            requirements
+            isActive
+            createdAt
+            updatedAt
+            createdBy
+            updatedBy
+          }
         }
-        total
-        page
-        pageSize
-        totalPages
+        failed {
+          email
+          reason
+        }
       }
     }
   `;
-
-		const variables = {
-			page: Number(page ?? 1),
-			limit: Number(limit ?? 10),
-			status: status ?? null,
-			search: search ?? null,
-			position: position ?? null,
-			sortBy: sortBy ?? null,
-			sortOrder: sortOrder ?? null,
-		};
-
-		const { candidates } = await this.query<{
-			candidates: CandidateListResponse;
-		}>(query, variables);
-
-		return candidates;
-	}
-
-	async addCandidatesBulk(candidates: CreateCandidateInput[]): Promise<{
-		success: CandidateOutput[];
-		failed: { email: string; reason: string }[];
-	}> {
-		const query = `
-      mutation BulkCreateCandidates($input: [CreateCandidateInput!]!) {
-        bulkCreateCandidates(input: $input) {
-          success {
-            id
-            firstName
-            lastName
-            email
-            phone
-            currentLocation
-            citizenship
-            status
-            resumeUrl
-            createdAt
-            updatedAt
-            candidateSkill {
-              id
-              university
-              qualification
-              proficiencyLevel
-              createdAt
-              updatedAt
-            }
-            jobApplication {
-              id
-              title
-              status
-              department
-              description
-              requirements
-              isActive
-              createdAt
-              updatedAt
-            }
-          }
-          failed {
-            email
-            reason
-          }
-        }
-      }
-    `;
 
 		const { bulkCreateCandidates } = await this.query<{
 			bulkCreateCandidates: {
 				success: CandidateOutput[];
 				failed: { email: string; reason: string }[];
 			};
-		}>(query, { input: candidates });
+		}>(query, { fullCandidates: candidates });
 
 		return bulkCreateCandidates;
+	}
+
+	async updateCandidate(
+		id: string,
+		candidate: UpdateCandidateInput
+	): Promise<CandidateOutput> {
+		const query = `
+    mutation UpdateCandidate($id: ID!, $candidate: UpdateCandidateInput!) {
+      updateCandidate(id: $id, candidate: $candidate) {
+        id
+        firstName
+        lastName
+        email
+        phone
+        currentLocation
+        citizenship
+        status
+        resumeUrl
+        createdAt
+        updatedAt
+        createdBy
+        updatedBy
+      }
+    }
+  `;
+
+		const { updateCandidate } = await this.query<{
+			updateCandidate: CandidateOutput;
+		}>(query, { id, candidate });
+
+		return updateCandidate;
+	}
+
+	async getCandidateSkillByCandidateId(
+		candidateId: string
+	): Promise<CandidateSkillOutput> {
+		const query = `
+    query GetCandidateSkill($candidateId: ID!) {
+      candidateSkill(candidateId: $candidateId) {
+        id
+        university
+        qualification
+        proficiencyLevel
+        yearsOfExperience
+        possessedSkills
+        createdAt
+        updatedAt
+        createdBy
+        updatedBy
+      }
+    }
+  `;
+
+		const { candidateSkill } = await this.query<{
+			candidateSkill: CandidateSkillOutput;
+		}>(query, { candidateId });
+
+		return candidateSkill;
+	}
+
+	async addSkillToCandidate(
+		candidateId: string,
+		candidateSkill: CreateCandidateSkillInput
+	): Promise<CandidateSkillOutput> {
+		const query = `
+    mutation AddSkillToCandidate(
+      $candidateId: ID!,
+      $candidateSkill: CreateCandidateSkillInput!
+    ) {
+      addSkillToCandidate(
+        candidateId: $candidateId,
+        candidateSkill: $candidateSkill
+      ) {
+        id
+        university
+        qualification
+        proficiencyLevel
+        yearsOfExperience
+        createdAt
+        updatedAt
+      }
+    }
+  `;
+
+		const { addSkillToCandidate } = await this.query<{
+			addSkillToCandidate: CandidateSkillOutput;
+		}>(query, { candidateId, candidateSkill });
+
+		return addSkillToCandidate;
+	}
+
+	async updateCandidateSkill(
+		skill: UpdateCandidateSkillInput
+	): Promise<CandidateSkillOutput> {
+		const query = `
+    mutation UpdateCandidateSkill($input: UpdateCandidateSkillInput!) {
+      updateCandidateSkill(input: $input) {
+        id
+        university
+        qualification
+        proficiencyLevel
+        yearsOfExperience
+        possessedSkills
+        createdAt
+        updatedAt
+        createdBy
+        updatedBy
+      }
+    }
+  `;
+
+		const { updateCandidateSkill } = await this.query<{
+			updateCandidateSkill: CandidateSkillOutput;
+		}>(query, { input: skill });
+
+		return updateCandidateSkill;
+	}
+
+	async getJobApplicationsByCandidateId(
+		candidateId: string
+	): Promise<JobApplicationOutput[]> {
+		const query = `
+    query JobApplicationsByCandidateId($candidateId: ID!) {
+      jobApplicationsByCandidateId(candidateId: $candidateId) {
+        id
+        title
+        appliedJob
+        applicationStatus
+        department
+        requirements
+        isActive
+        createdAt
+        updatedAt
+        createdBy
+        updatedBy
+        interviewStages {
+          id
+          name
+          feedback
+          interviewerName
+          rating
+          nextStepNotes
+          createdAt
+          updatedAt
+          createdBy
+          updatedBy
+        }
+      }
+    }
+  `;
+
+		const { jobApplicationsByCandidateId } = await this.query<{
+			jobApplicationsByCandidateId: JobApplicationOutput[];
+		}>(query, { candidateId });
+
+		return jobApplicationsByCandidateId;
+	}
+
+	async addJobApplicationToCandidate(
+		candidateId: string,
+		jobApplication: CreateJobApplicationInput
+	): Promise<JobApplicationOutput> {
+		const query = `
+    mutation AddJobApplicationToCandidate(
+      $candidateId: ID!,
+      $jobApplication: CreateJobApplicationInput!
+    ) {
+      addJobApplicationToCandidate(
+        candidateId: $candidateId,
+        jobApplication: $jobApplication
+      ) {
+        id
+        title
+        appliedJob
+        applicationStatus
+        department
+        requirements
+        isActive
+        createdAt
+        updatedAt
+      }
+    }
+  `;
+
+		const { addJobApplicationToCandidate } = await this.query<{
+			addJobApplicationToCandidate: JobApplicationOutput;
+		}>(query, { candidateId, jobApplication });
+
+		return addJobApplicationToCandidate;
+	}
+
+	async updateJobApplication(
+		jobApp: UpdateJobApplicationInput
+	): Promise<JobApplicationOutput> {
+		const query = `
+    mutation UpdateJobApplication($input: UpdateJobApplicationInput!) {
+      updateJobApplication(input: $input) {
+        id
+        title
+        appliedJob
+        applicationStatus
+        department
+        requirements
+        isActive
+        createdAt
+        updatedAt
+        createdBy
+        updatedBy
+        interviewStages {
+          id
+          name
+          feedback
+          interviewerName
+          rating
+          nextStepNotes
+          createdAt
+          updatedAt
+          createdBy
+          updatedBy
+        }
+      }
+    }
+  `;
+
+		const { updateJobApplication } = await this.query<{
+			updateJobApplication: JobApplicationOutput;
+		}>(query, { input: jobApp });
+
+		return updateJobApplication;
+	}
+
+	async getInterviewStagesByJobId(
+		jobApplicationId: string
+	): Promise<InterviewStageOutput[]> {
+		const query = `
+    query GetInterviewStages($jobApplicationId: ID!) {
+      interviewStages(jobApplicationId: $jobApplicationId) {
+        id
+        name
+        feedback
+        interviewerName
+        rating
+        nextStepNotes
+        comments
+        createdAt
+        updatedAt
+        createdBy
+        updatedBy
+      }
+    }
+  `;
+
+		const { interviewStages } = await this.query<{
+			interviewStages: InterviewStageOutput[];
+		}>(query, { jobApplicationId });
+
+		return interviewStages;
+	}
+
+	async updateInterviewStage(
+		stage: UpdateInterviewStageInput
+	): Promise<InterviewStageOutput> {
+		const query = `
+    mutation UpdateInterviewStage($input: UpdateInterviewStageInput!) {
+      updateInterviewStage(input: $input) {
+        id
+        name
+        feedback
+        interviewerName
+        rating
+        nextStepNotes
+        comments
+        createdAt
+        updatedAt
+        createdBy
+        updatedBy
+      }
+    }
+  `;
+
+		const { updateInterviewStage } = await this.query<{
+			updateInterviewStage: InterviewStageOutput;
+		}>(query, { input: stage });
+
+		return updateInterviewStage;
+	}
+
+	async addInterviewStageToJob(
+		jobApplicationId: string,
+		stageData: Omit<CreateInterviewStageInput, "jobApplicationId">
+	): Promise<InterviewStageOutput> {
+		const query = `
+    mutation AddInterviewStage($input: CreateInterviewStageInput!) {
+      createInterviewStage(input: $input) {
+        id
+        name
+        feedback
+        interviewerName
+        rating
+        nextStepNotes
+        comments
+        createdAt
+        updatedAt
+        createdBy
+        updatedBy
+      }
+    }
+  `;
+
+		const input: CreateInterviewStageInput = {
+			...stageData,
+			jobApplicationId,
+		};
+
+		const { createInterviewStage } = await this.query<{
+			createInterviewStage: InterviewStageOutput;
+		}>(query, { input });
+
+		return createInterviewStage;
 	}
 }
 

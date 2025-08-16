@@ -30,31 +30,31 @@ export class InterviewStageResolver {
 	}
 
 	@Query(() => [InterviewStageOutput], { nullable: true })
-	async interviewStagesByCandidateId(
-		@Arg("candidateId", () => ID) candidateId: string
+	async getInterviewStagesByJobId(
+		@Arg("jobApplicationId", () => ID) jobApplicationId: string
 	): Promise<InterviewStageOutput[] | null> {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
 		return repository.find({
-			where: { jobApplication: { candidate: { id: candidateId } } },
+			where: { jobApplication: { id: jobApplicationId } },
 			relations: ["jobApplication", "history"],
 		});
 	}
 
 	@Mutation(() => InterviewStageOutput)
-	async createInterviewStage(
+	async addInterviewStageToJob(
 		@Arg("jobApplicationId", () => ID) jobApplicationId: string,
 		@Arg("name") name: string,
 		@Arg("feedback") feedback: string,
 		@Arg("rating") rating: number,
 		@Arg("nextStepNotes") nextStepNotes: string
 	): Promise<InterviewStageOutput> {
-		const repository = this.dataSource.getRepository(InterviewStageEntity);
 		const jobApplicationRepo =
 			this.dataSource.getRepository(JobApplicationEntity);
 		const jobApplication = await jobApplicationRepo.findOneOrFail({
 			where: { id: jobApplicationId },
 		});
 
+		const repository = this.dataSource.getRepository(InterviewStageEntity);
 		const stage = repository.create({
 			name,
 			feedback,
@@ -64,14 +64,14 @@ export class InterviewStageResolver {
 		});
 
 		return runTransaction(this.dataSource, async (manager) => {
-			const response = await manager.save(stage);
+			const savedStage = await manager.save(stage);
 			await this.historyService.createHistoryRecord(
-				stage,
+				savedStage,
 				"InterviewStageEntity",
 				"CREATE",
 				manager
 			);
-			return response;
+			return savedStage;
 		});
 	}
 

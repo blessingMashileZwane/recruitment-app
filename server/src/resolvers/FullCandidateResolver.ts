@@ -5,10 +5,10 @@ import {
 	CandidateSkillEntity,
 	JobApplicationEntity,
 } from "../entities";
-import { CandidateStatus, AppliedJob, AppliedJobStatus } from "../types";
+import { AppliedJobStatus, CandidateStatus } from "../types";
 import { CreateCandidateInput } from "../types/inputs";
-import { HistoryService } from "../utils/history.service";
 import { CandidateOutput } from "../types/outputs";
+import { HistoryService } from "../utils/history.service";
 
 @Resolver(() => CandidateOutput)
 export class FullCandidateResolver {
@@ -117,6 +117,116 @@ export class FullCandidateResolver {
 		} catch (error) {
 			await queryRunner.rollbackTransaction();
 			throw error;
+		} finally {
+			await queryRunner.release();
+		}
+	}
+
+	@Mutation(() => Object)
+	async addCandidatesBulk(
+		@Arg("input", () => [CreateCandidateInput]) input: CreateCandidateInput[]
+	): Promise<{
+		success: CandidateOutput[];
+		failed: { email: string; reason: string }[];
+	}> {
+		const queryRunner = this.dataSource.createQueryRunner();
+		await queryRunner.connect();
+		await queryRunner.startTransaction();
+
+		const success: CandidateOutput[] = [];
+		const failed: { email: string; reason: string }[] = [];
+
+		try {
+			for (const candidateInput of input) {
+				try {
+					const existingCandidate = await queryRunner.manager.findOne(
+						CandidateEntity,
+						{
+							where: { email: candidateInput.email },
+						}
+					);
+					if (existingCandidate) {
+						failed.push({
+							email: candidateInput.email,
+							reason: "Email already exists",
+						});
+						continue;
+					}
+
+					const candidate = queryRunner.manager.create(CandidateEntity, {
+						firstName: candidateInput.firstName,
+						lastName: candidateInput.lastName,
+						email: candidateInput.email,
+						phone: candidateInput.phone,
+						status: candidateInput.status ?? CandidateStatus.OPEN,
+						currentLocation: candidateInput.currentLocation,
+						citizenship: candidateInput.citizenship,
+						resumeUrl: candidateInput.resumeUrl,
+					});
+					await queryRunner.manager.save(candidate);
+					await this.historyService.createHistoryRecord(
+						candidate,
+						"CandidateEntity",
+						"CREATE",
+						queryRunner
+					);
+
+					const skill = queryRunner.manager.create(CandidateSkillEntity, {
+						candidateId: candidate.id,
+						university: candidateInput.candidateSkill.university,
+						qualification: candidateInput.candidateSkill.qualification,
+						proficiencyLevel: candidateInput.candidateSkill.proficiencyLevel,
+						yearsOfExperience: 0,
+					});
+					await queryRunner.manager.save(skill);
+					await this.historyService.createHistoryRecord(
+						skill,
+						"CandidateSkillEntity",
+						"CREATE",
+						queryRunner
+					);
+
+					if (candidateInput.jobApplications?.length) {
+						for (const jobInput of candidateInput.jobApplications) {
+							const jobApp = queryRunner.manager.create(JobApplicationEntity, {
+								candidate,
+								appliedJob: jobInput.appliedJob,
+								applicationStatus: jobInput.applicationStatus,
+								appliedJobOther: jobInput.appliedJobOther,
+								isActive: jobInput.isActive,
+							});
+							await queryRunner.manager.save(jobApp);
+							await this.historyService.createHistoryRecord(
+								jobApp,
+								"JobApplicationEntity",
+								"CREATE",
+								queryRunner
+							);
+						}
+					}
+
+					const fullCandidate = await this.fullCandidate(candidate.id);
+					if (fullCandidate) {
+						success.push(fullCandidate);
+					} else {
+						failed.push({
+							email: candidateInput.email,
+							reason: "Failed to load candidate after creation",
+						});
+					}
+				} catch (err) {
+					failed.push({
+						email: candidateInput.email,
+						reason: (err as Error).message,
+					});
+				}
+			}
+
+			await queryRunner.commitTransaction();
+			return { success, failed };
+		} catch (err) {
+			await queryRunner.rollbackTransaction();
+			throw err;
 		} finally {
 			await queryRunner.release();
 		}
