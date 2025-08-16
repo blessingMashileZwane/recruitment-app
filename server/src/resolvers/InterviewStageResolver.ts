@@ -4,6 +4,7 @@ import { InterviewStageEntity, JobApplicationEntity } from "../entities";
 import { DataSource } from "typeorm";
 import { InterviewStageOutput } from "../types/outputs";
 import { runTransaction } from "../utils";
+import { CreateInterviewStageInput } from "../types/inputs";
 
 @Resolver(() => InterviewStageEntity)
 export class InterviewStageResolver {
@@ -29,37 +30,36 @@ export class InterviewStageResolver {
 		});
 	}
 
-	@Query(() => [InterviewStageOutput], { nullable: true })
+	@Query(() => [InterviewStageOutput])
 	async getInterviewStagesByJobId(
 		@Arg("jobApplicationId", () => ID) jobApplicationId: string
 	): Promise<InterviewStageOutput[] | null> {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
-		return repository.find({
+		const res = await repository.find({
 			where: { jobApplication: { id: jobApplicationId } },
 			relations: ["jobApplication", "history"],
 		});
+		console.log("Interview stages for job:", res);
+		return res;
 	}
 
 	@Mutation(() => InterviewStageOutput)
 	async addInterviewStageToJob(
-		@Arg("jobApplicationId", () => ID) jobApplicationId: string,
-		@Arg("name") name: string,
-		@Arg("feedback") feedback: string,
-		@Arg("rating") rating: number,
-		@Arg("nextStepNotes") nextStepNotes: string
+		@Arg("input") input: CreateInterviewStageInput
 	): Promise<InterviewStageOutput> {
 		const jobApplicationRepo =
 			this.dataSource.getRepository(JobApplicationEntity);
 		const jobApplication = await jobApplicationRepo.findOneOrFail({
-			where: { id: jobApplicationId },
+			where: { id: input.jobApplicationId },
 		});
 
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
 		const stage = repository.create({
-			name,
-			feedback,
-			rating,
-			nextStepNotes,
+			name: input.name,
+			feedback: input.feedback,
+			rating: input.rating,
+			nextStepNotes: input.nextStepNotes,
+			progressToNextStage: input.progressToNextStage,
 			jobApplication,
 		});
 

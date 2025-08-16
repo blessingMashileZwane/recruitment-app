@@ -84,6 +84,7 @@ export class HistoryService {
 				stageHistory.rating = entity.rating ?? 0;
 				stageHistory.nextStepNotes = entity.nextStepNotes ?? "";
 				stageHistory.createdBy = userId;
+				stageHistory.progressToNextStage = entity.progressToNextStage ?? false;
 				await manager.save(stageHistory);
 				console.log(
 					`History record created for InterviewStageEntity: ${entity.id}`

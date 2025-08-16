@@ -1,124 +1,175 @@
+import { AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { mockGraphQL } from '../../mock/mockData';
 import { graphqlService } from '../../services/graphql.service';
-import type { CandidateOutput } from '../../types/outputs';
 import type { CreateInterviewStageInput } from '../../types/inputs';
+import type { CandidateOutput } from '../../types/outputs';
 
 type FeedbackFormProps = {
     candidateId: string;
+    jobId: string;
     onViewFeedback: (candidateId: string) => void;
 }
 
-
-function FeedbackForm({ candidateId, onViewFeedback }: FeedbackFormProps) {
+function FeedbackForm({ candidateId, jobId, onViewFeedback }: FeedbackFormProps) {
     const [loading, setLoading] = useState(true);
-    const [selectedCandidate, setSelectedCandidate] = useState<CandidateOutput>(
-        {} as CandidateOutput
-    );
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [selectedCandidate, setSelectedCandidate] = useState<CandidateOutput | null>(null);
     const [feedbackForm, setFeedbackForm] = useState<{
-        interviewerName: string;
         interviewStep: string;
         rating: number;
         feedback: string;
         nextStepNotes: string;
+        progressToNextStage: boolean;
     }>({
-        interviewerName: '',
         interviewStep: '',
         rating: 0,
         feedback: '',
         nextStepNotes: '',
+        progressToNextStage: false,
     });
 
     useEffect(() => {
-        const loadFeedback = async () => {
+        console.log({ jobId });
+        const loadCandidate = async () => {
             setLoading(true);
+            setError(null);
             try {
-                const candidateData = await mockGraphQL.getCandidateById(candidateId);
+                const candidateData = await graphqlService.getCandidateById(candidateId);
                 setSelectedCandidate(candidateData);
             } catch (error) {
-                console.error("Failed to load feedback:", error);
+                setError("Failed to load candidate data.");
+                console.error("Failed to load candidate:", error);
             } finally {
                 setLoading(false);
             }
         };
 
-        loadFeedback();
+        loadCandidate();
     }, [candidateId]);
 
-    function handleAddFeedback() {
-        if (!feedbackForm || !feedbackForm.feedback) return alert('Enter feedback');
-        setLoading(true);
-        const fb: CreateInterviewStageInput = {
-            interviewerName: feedbackForm.interviewerName,
-            rating: feedbackForm.rating,
-            feedback: feedbackForm.feedback,
-            nextStepNotes: feedbackForm.nextStepNotes,
-            name: '',
-            jobApplicationId: selectedCandidate.jobApplication.id,
-        }
-        onViewFeedback(candidateId)
-        setFeedbackForm({
-            interviewerName: '',
-            interviewStep: '',
-            rating: 0,
-            feedback: '',
-            nextStepNotes: '',
-        });
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-        graphqlService.addFeedback(fb)
-            .then(() => {
-                setLoading(false);
-                alert('Feedback added successfully');
-            })
-            .catch((error) => {
-                setLoading(false);
-                console.error("Failed to add feedback:", error);
-                alert('Failed to add feedback');
+        if (!feedbackForm.feedback.trim()) {
+            alert('Please enter feedback');
+            return;
+        }
+        if (feedbackForm.rating === 0) {
+            alert('Please select a rating');
+            return;
+        }
+        if (!feedbackForm.interviewStep) {
+            alert('Please select an interview step');
+            return;
+        }
+
+        setSubmitting(true);
+        setError(null);
+
+        try {
+            const feedbackData: CreateInterviewStageInput = {
+                rating: feedbackForm.rating,
+                feedback: feedbackForm.feedback.trim(),
+                nextStepNotes: feedbackForm.nextStepNotes.trim(),
+                name: feedbackForm.interviewStep,
+                jobApplicationId: jobId,
+                progressToNextStage: feedbackForm.progressToNextStage,
+            };
+
+            await graphqlService.addInterviewStageToJob(feedbackData);
+
+            setFeedbackForm({
+                interviewStep: '',
+                rating: 0,
+                feedback: '',
+                nextStepNotes: '',
+                progressToNextStage: false,
             });
+
+            alert('Feedback added successfully');
+            onViewFeedback(candidateId);
+        } catch (error) {
+            setError("Failed to add feedback. Please try again.");
+            console.error("Failed to add feedback:", error);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 flex items-center space-x-3">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <span>Loading candidate data...</span>
+                </div>
+            </div>
+        );
     }
 
     return (
         <div className="max-w-4xl mx-auto">
+            {/* Error Popup */}
+            {error && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+                        <div className="flex items-center mb-4">
+                            <AlertCircle className="h-6 w-6 text-red-600 mr-3" />
+                            <h3 className="text-lg font-semibold text-gray-900">Error</h3>
+                        </div>
+                        <p className="text-gray-700 mb-6">{error}</p>
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                onClick={() => setError(null)}
+                                className="py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="mb-6">
                 <button
                     onClick={() => onViewFeedback(candidateId)}
                     className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-4"
                 >
-                    ← Back to candidate
+                    ← Back to Feedback history
                 </button>
                 <h2 className="text-2xl font-bold text-gray-900">
-                    Add Feedback for {selectedCandidate.firstName} {selectedCandidate.lastName}
+                    Add Feedback for {selectedCandidate?.firstName} {selectedCandidate?.lastName}
                 </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                    Position: {selectedCandidate.jobApplication.title}
-                </p>
             </div>
 
             <div className="bg-white shadow rounded-lg p-8">
-                <form onSubmit={handleAddFeedback} className="space-y-8">
+                <form onSubmit={handleSubmit} className="space-y-8">
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Interviewer Name
+                                Progress to Next Stage
                             </label>
-                            <input
-                                type="text"
+                            <select
                                 required
-                                value={feedbackForm.interviewerName}
+                                value={feedbackForm.progressToNextStage ? "true" : "false"}
                                 onChange={(e) =>
                                     setFeedbackForm((prev) => ({
                                         ...prev,
-                                        interviewerName: e.target.value,
+                                        progressToNextStage: e.target.value === "true",
                                     }))
                                 }
                                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 border"
-                                placeholder="Enter interviewer name"
-                            />
+                            >
+                                <option value="false">No</option>
+                                <option value="true">Yes</option>
+                            </select>
                         </div>
+
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Interview Step
+                                Interview Step *
                             </label>
                             <select
                                 required
@@ -133,13 +184,9 @@ function FeedbackForm({ candidateId, onViewFeedback }: FeedbackFormProps) {
                             >
                                 <option value="">Select interview step</option>
                                 <option value="Phone Screening">Phone Screening</option>
-                                <option value="Technical Interview">
-                                    Technical Interview
-                                </option>
+                                <option value="Technical Interview">Technical Interview</option>
                                 <option value="System Design">System Design</option>
-                                <option value="Behavioral Interview">
-                                    Behavioral Interview
-                                </option>
+                                <option value="Behavioral Interview">Behavioral Interview</option>
                                 <option value="Final Interview">Final Interview</option>
                                 <option value="HR Interview">HR Interview</option>
                             </select>
@@ -148,7 +195,7 @@ function FeedbackForm({ candidateId, onViewFeedback }: FeedbackFormProps) {
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-3">
-                            Overall Rating
+                            Overall Rating *
                         </label>
                         <div className="flex items-center space-x-6">
                             {[1, 2, 3, 4, 5].map((rating) => (
@@ -186,7 +233,7 @@ function FeedbackForm({ candidateId, onViewFeedback }: FeedbackFormProps) {
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Interview Comments
+                            Interview Comments *
                         </label>
                         <textarea
                             required
@@ -202,8 +249,7 @@ function FeedbackForm({ candidateId, onViewFeedback }: FeedbackFormProps) {
                             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 border resize-none"
                         />
                         <p className="mt-1 text-xs text-gray-500">
-                            Be specific and provide examples to help other interviewers
-                            and hiring managers
+                            Be specific and provide examples to help other interviewers and hiring managers
                         </p>
                     </div>
 
@@ -224,8 +270,7 @@ function FeedbackForm({ candidateId, onViewFeedback }: FeedbackFormProps) {
                             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 border resize-none"
                         />
                         <p className="mt-1 text-xs text-gray-500">
-                            Help the next interviewer by highlighting areas they should
-                            explore further
+                            Help the next interviewer by highlighting areas they should explore further
                         </p>
                     </div>
 
@@ -233,22 +278,23 @@ function FeedbackForm({ candidateId, onViewFeedback }: FeedbackFormProps) {
                         <button
                             type="button"
                             onClick={() => onViewFeedback(candidateId)}
-                            className="py-2 px-6 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            disabled={submitting}
+                            className="py-2 px-6 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={submitting}
                             className="py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {loading ? "Saving..." : "Save Feedback"}
+                            {submitting ? "Saving..." : "Save Feedback"}
                         </button>
                     </div>
                 </form>
             </div>
         </div>
-    )
+    );
 }
 
 export default FeedbackForm;

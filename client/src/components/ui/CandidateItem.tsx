@@ -1,14 +1,12 @@
-import { Eye, MessageSquare, User } from "lucide-react";
+import { Eye, User } from "lucide-react";
 import type { CandidateOutput } from "../../types/outputs";
 
 function CandidateItem({
     candidate,
     onViewDetails,
-    onViewFeedback
 }: {
     candidate: CandidateOutput;
     onViewDetails: (id: string) => void;
-    onViewFeedback: (id: string) => void;
 }) {
     const getStatusColor = (status: CandidateOutput['status']) => {
         const colors: Record<CandidateOutput['status'], string> = {
@@ -56,13 +54,13 @@ function CandidateItem({
                         <Eye className="h-3 w-3 mr-1" />
                         View
                     </button>
-                    <button
+                    {/* <button
                         onClick={() => onViewFeedback(candidate.id)}
                         className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                     >
                         <MessageSquare className="h-3 w-3 mr-1" />
                         Feedback
-                    </button>
+                    </button> */}
                 </div>
             </div>
 

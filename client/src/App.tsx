@@ -19,7 +19,7 @@ type ViewState =
   | { view: "edit-candidate"; candidateId: string }
   | { view: "candidate-details"; candidateId: string }
   | { view: "feedback-history"; candidateId: string }
-  | { view: "add-feedback"; candidateId: string }
+  | { view: "add-feedback"; candidateId: string; jobId: string }
   | { view: "edit-feedback"; feedbackId: string }
   | { view: "edit-skill"; candidateId: string }
   | { view: "edit-job-application"; candidateId: string };
@@ -96,11 +96,7 @@ function App() {
                 return <CandidatesList onViewDetails={(id) => {
                   setSelectedCandidateId(id);
                   setCurrentView({ view: 'candidate-details', candidateId: id });
-                }}
-                  onViewFeedback={(id) => {
-                    setSelectedCandidateId(id);
-                    setCurrentView({ view: 'feedback-history', candidateId: id });
-                  }} />;
+                }} />;
 
               case "add-candidate":
                 return <CandidateForm />
@@ -146,22 +142,25 @@ function App() {
                 );
 
               case "feedback-history":
-                if (!selectedCandidateId) {
+                if (!selectedJobApplicationId || !selectedCandidateId) {
                   setCurrentView({ view: "candidates" });
                   return null;
                 }
                 return (
                   <FeedbackHistory
                     candidateId={selectedCandidateId}
+                    jobId={selectedJobApplicationId}
                     onAddFeedback={(id) => {
-                      id !== undefined ? setSelectedCandidateId(id) : null;
+                      id !== undefined ? setSelectedJobApplicationId(id) : null;
+                      console.log("job application id", id)
+                      console.log({ selectedJobApplicationId })
                       setCurrentView({
                         view: "add-feedback",
                         candidateId: selectedCandidateId,
+                        jobId: id,
                       })
                     }}
                     onBack={() => {
-                      console.log("Back to Candidates", selectedCandidateId);
                       setCurrentView({
                         view: "candidate-details",
                         candidateId: selectedCandidateId,
@@ -180,7 +179,7 @@ function App() {
                 );
 
               case "add-feedback":
-                if (!selectedCandidateId) {
+                if (!selectedCandidateId || !selectedJobApplicationId) {
                   setCurrentView({ view: "candidates" });
                   return null;
                 }
@@ -188,6 +187,7 @@ function App() {
                   setSelectedCandidateId(id);
                   setCurrentView({ view: "feedback-history", candidateId: id });
                 }}
+                  jobId={selectedJobApplicationId}
                   candidateId={selectedCandidateId} />
 
               case "edit-feedback":
@@ -215,11 +215,7 @@ function App() {
                 return <CandidatesList onViewDetails={(id) => {
                   setSelectedCandidateId(id);
                   setCurrentView({ view: 'candidate-details', candidateId: id });
-                }}
-                  onViewFeedback={(id) => {
-                    setSelectedCandidateId(id);
-                    setCurrentView({ view: 'feedback-history', candidateId: id });
-                  }} />;
+                }} />;
             }
           })()}
         </main>

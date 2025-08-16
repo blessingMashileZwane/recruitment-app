@@ -519,15 +519,13 @@ export class GraphQLService {
 		jobApplicationId: string
 	): Promise<InterviewStageOutput[]> {
 		const query = `
-    query GetInterviewStages($jobApplicationId: ID!) {
-      interviewStages(jobApplicationId: $jobApplicationId) {
+    query GetInterviewStagesByJobId($jobApplicationId: ID!) {
+      getInterviewStagesByJobId(jobApplicationId: $jobApplicationId) {
         id
         name
         feedback
-        interviewerName
         rating
         nextStepNotes
-        comments
         createdAt
         updatedAt
         createdBy
@@ -536,11 +534,11 @@ export class GraphQLService {
     }
   `;
 
-		const { interviewStages } = await this.query<{
-			interviewStages: InterviewStageOutput[];
+		const { getInterviewStagesByJobId } = await this.query<{
+			getInterviewStagesByJobId: InterviewStageOutput[];
 		}>(query, { jobApplicationId });
 
-		return interviewStages;
+		return getInterviewStagesByJobId;
 	}
 
 	async updateInterviewStage(
@@ -572,19 +570,17 @@ export class GraphQLService {
 	}
 
 	async addInterviewStageToJob(
-		jobApplicationId: string,
-		stageData: Omit<CreateInterviewStageInput, "jobApplicationId">
+		stageData: CreateInterviewStageInput
 	): Promise<InterviewStageOutput> {
 		const query = `
-    mutation AddInterviewStage($input: CreateInterviewStageInput!) {
-      createInterviewStage(input: $input) {
+    mutation AddInterviewStageToJob($input: CreateInterviewStageInput!) {
+      addInterviewStageToJob(input: $input) {
         id
         name
         feedback
-        interviewerName
         rating
         nextStepNotes
-        comments
+        progressToNextStage
         createdAt
         updatedAt
         createdBy
@@ -593,16 +589,13 @@ export class GraphQLService {
     }
   `;
 
-		const input: CreateInterviewStageInput = {
-			...stageData,
-			jobApplicationId,
-		};
+  console.log({stageData})
 
-		const { createInterviewStage } = await this.query<{
-			createInterviewStage: InterviewStageOutput;
-		}>(query, { input });
+		const { addInterviewStageToJob } = await this.query<{
+			addInterviewStageToJob: InterviewStageOutput;
+		}>(query, { input: stageData });
 
-		return createInterviewStage;
+		return addInterviewStageToJob;
 	}
 }
 

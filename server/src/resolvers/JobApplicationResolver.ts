@@ -37,12 +37,10 @@ export class JobApplicationResolver {
 		@Arg("candidateId", () => ID) candidateId: string
 	): Promise<JobApplicationOutput[]> {
 		const repository = this.dataSource.getRepository(JobApplicationEntity);
-		const res = await repository.find({
+		return repository.find({
 			where: { candidate: { id: candidateId } },
 			relations: ["candidate"],
 		});
-		console.log("Job Applications by Candidate ID:", res);
-		return res;
 	}
 
 	@Mutation(() => JobApplicationOutput)

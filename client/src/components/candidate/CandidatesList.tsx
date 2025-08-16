@@ -7,7 +7,6 @@ import CandidateItem from '../ui/CandidateItem';
 
 type CandidateListProps = {
     onViewDetails: (id: string) => void;
-    onViewFeedback: (candidateId: string) => void;
 };
 
 const statusOptions = ["ALL", "OPEN", "CLOSED"] as const;
@@ -19,7 +18,7 @@ type AppliedJobFilter = typeof appliedJobOptions[number];
 const appliedJobStatusOptions = ["ALL", ...Object.values(AppliedJobStatus)] as const;
 type AppliedJobStatusFilter = typeof appliedJobStatusOptions[number];
 
-function CandidateList({ onViewDetails, onViewFeedback }: CandidateListProps) {
+function CandidateList({ onViewDetails }: CandidateListProps) {
     const [candidates, setCandidates] = useState<CandidateOutput[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -181,7 +180,6 @@ function CandidateList({ onViewDetails, onViewFeedback }: CandidateListProps) {
                             key={candidate.id}
                             candidate={candidate}
                             onViewDetails={() => onViewDetails(candidate.id)}
-                            onViewFeedback={() => onViewFeedback(candidate.id)}
                         />
                     ))}
                 </ul>
