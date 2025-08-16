@@ -1,5 +1,5 @@
-import { AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { graphqlService } from '../../services/graphql.service';
 import type { CreateInterviewStageInput } from '../../types/inputs';
 import type { CandidateOutput } from '../../types/outputs';
@@ -13,7 +13,6 @@ type FeedbackFormProps = {
 function FeedbackForm({ candidateId, jobId, onViewFeedback }: FeedbackFormProps) {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [selectedCandidate, setSelectedCandidate] = useState<CandidateOutput | null>(null);
     const [feedbackForm, setFeedbackForm] = useState<{
         interviewStep: string;
@@ -33,12 +32,11 @@ function FeedbackForm({ candidateId, jobId, onViewFeedback }: FeedbackFormProps)
         console.log({ jobId });
         const loadCandidate = async () => {
             setLoading(true);
-            setError(null);
             try {
                 const candidateData = await graphqlService.getCandidateById(candidateId);
                 setSelectedCandidate(candidateData);
             } catch (error) {
-                setError("Failed to load candidate data.");
+                toast.error("Failed to load candidate data. Please try again.");
                 console.error("Failed to load candidate:", error);
             } finally {
                 setLoading(false);
@@ -52,20 +50,19 @@ function FeedbackForm({ candidateId, jobId, onViewFeedback }: FeedbackFormProps)
         e.preventDefault();
 
         if (!feedbackForm.feedback.trim()) {
-            alert('Please enter feedback');
+            toast.error('Please enter feedback');
             return;
         }
         if (feedbackForm.rating === 0) {
-            alert('Please select a rating');
+            toast.error('Please select a rating');
             return;
         }
         if (!feedbackForm.interviewStep) {
-            alert('Please select an interview step');
+            toast.error('Please select an interview step');
             return;
         }
 
         setSubmitting(true);
-        setError(null);
 
         try {
             const feedbackData: CreateInterviewStageInput = {
@@ -87,10 +84,10 @@ function FeedbackForm({ candidateId, jobId, onViewFeedback }: FeedbackFormProps)
                 progressToNextStage: false,
             });
 
-            alert('Feedback added successfully');
+            toast.success('Feedback added successfully');
             onViewFeedback(candidateId);
         } catch (error) {
-            setError("Failed to add feedback. Please try again.");
+            toast.error("Failed to add feedback. Please try again.");
             console.error("Failed to add feedback:", error);
         } finally {
             setSubmitting(false);
@@ -110,27 +107,6 @@ function FeedbackForm({ candidateId, jobId, onViewFeedback }: FeedbackFormProps)
 
     return (
         <div className="max-w-4xl mx-auto">
-            {/* Error Popup */}
-            {error && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-                        <div className="flex items-center mb-4">
-                            <AlertCircle className="h-6 w-6 text-red-600 mr-3" />
-                            <h3 className="text-lg font-semibold text-gray-900">Error</h3>
-                        </div>
-                        <p className="text-gray-700 mb-6">{error}</p>
-                        <div className="flex justify-end space-x-3">
-                            <button
-                                onClick={() => setError(null)}
-                                className="py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             <div className="mb-6">
                 <button
                     onClick={() => onViewFeedback(candidateId)}

@@ -515,6 +515,30 @@ export class GraphQLService {
 		return updateJobApplication;
 	}
 
+	async getInterviewStageById(id: string): Promise<InterviewStageOutput> {
+		const query = `
+    query InterviewStage($id: ID!) {
+      interviewStage(id: $id) {
+        id
+        name
+        feedback
+        rating
+        nextStepNotes
+        createdAt
+        updatedAt
+        createdBy
+        updatedBy
+      }
+    }
+  `;
+
+		const { interviewStage } = await this.query<{
+			interviewStage: InterviewStageOutput;
+		}>(query, { id });
+
+		return interviewStage;
+	}
+
 	async getInterviewStagesByJobId(
 		jobApplicationId: string
 	): Promise<InterviewStageOutput[]> {
@@ -589,7 +613,7 @@ export class GraphQLService {
     }
   `;
 
-  console.log({stageData})
+		console.log({ stageData });
 
 		const { addInterviewStageToJob } = await this.query<{
 			addInterviewStageToJob: InterviewStageOutput;

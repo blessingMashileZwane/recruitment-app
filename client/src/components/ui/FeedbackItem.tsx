@@ -15,7 +15,7 @@ function FeedbackItem({
                         {interviewStage.name}
                     </h4>
                     <p className="text-sm text-gray-600">
-                        by {interviewStage.interviewerName}
+                        by {interviewStage.createdBy}
                     </p>
                 </div>
                 <span className="text-sm font-medium text-gray-900">

@@ -29,7 +29,7 @@ function App() {
   const { user, isLoggedIn, logout } = useAuth();
   const [currentView, setCurrentView] = useState<ViewState>({ view: "candidates" });
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
-  const [selectedFeedbackId, setSelectedFeedbackId] = useState<string | null>(null);
+  const [selectedInterviewStageId, setSelectedInterviewStageId] = useState<string | null>(null);
   const [selectedJobApplicationId, setSelectedJobApplicationId] = useState<string | null>(null);
 
   if (!isLoggedIn) {
@@ -152,8 +152,6 @@ function App() {
                     jobId={selectedJobApplicationId}
                     onAddFeedback={(id) => {
                       id !== undefined ? setSelectedJobApplicationId(id) : null;
-                      console.log("job application id", id)
-                      console.log({ selectedJobApplicationId })
                       setCurrentView({
                         view: "add-feedback",
                         candidateId: selectedCandidateId,
@@ -168,7 +166,7 @@ function App() {
                     }
                     }
                     onEditFeedback={(id) => {
-                      setSelectedFeedbackId(id)
+                      setSelectedInterviewStageId(id)
                       setCurrentView({
                         view: "edit-feedback",
                         feedbackId: id,
@@ -191,11 +189,11 @@ function App() {
                   candidateId={selectedCandidateId} />
 
               case "edit-feedback":
-                if (!selectedCandidateId || !selectedFeedbackId) {
+                if (!selectedCandidateId || !selectedJobApplicationId || !selectedInterviewStageId) {
                   setCurrentView({ view: "candidates" });
                   return null;
                 }
-                return <FeedbackEdit feedbackId={selectedFeedbackId} candidateId={selectedCandidateId} onCancel={() => setCurrentView({ view: 'feedback-history', candidateId: selectedCandidateId })} onSave={() => setCurrentView({ view: 'feedback-history', candidateId: selectedCandidateId })} />
+                return <FeedbackEdit jobId={selectedJobApplicationId} candidateId={selectedCandidateId} interviewStageId={selectedInterviewStageId} onCancel={() => setCurrentView({ view: 'feedback-history', candidateId: selectedCandidateId })} onSubmit={() => setCurrentView({ view: 'feedback-history', candidateId: selectedCandidateId })} />
 
               case "edit-skill":
                 if (!selectedCandidateId) {

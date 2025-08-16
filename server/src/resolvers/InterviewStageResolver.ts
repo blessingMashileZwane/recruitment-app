@@ -26,7 +26,7 @@ export class InterviewStageResolver {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
 		return repository.findOne({
 			where: { id },
-			relations: ["jobApplication", "history"],
+			relations: ["jobApplication"],
 		});
 	}
 
