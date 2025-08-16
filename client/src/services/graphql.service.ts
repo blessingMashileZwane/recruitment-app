@@ -297,12 +297,10 @@ export class GraphQLService {
 		return bulkCreateCandidates;
 	}
 
-	async updateCandidate(
-		candidate: UpdateCandidateInput
-	): Promise<CandidateOutput> {
+	async updateCandidate(input: UpdateCandidateInput): Promise<CandidateOutput> {
 		const query = `
-    mutation UpdateCandidate($candidate: UpdateCandidateInput!) {
-      updateCandidate(candidate: $candidate) {
+    mutation UpdateCandidate($input: UpdateCandidateInput!) {
+      updateCandidate(input: $input) {
         id
         firstName
         lastName
@@ -322,7 +320,7 @@ export class GraphQLService {
 
 		const { updateCandidate } = await this.query<{
 			updateCandidate: CandidateOutput;
-		}>(query, { candidate });
+		}>(query, { input });
 
 		return updateCandidate;
 	}
@@ -606,7 +604,7 @@ export class GraphQLService {
 	}
 
 	async updateInterviewStage(
-		stage: UpdateInterviewStageInput
+		input: UpdateInterviewStageInput
 	): Promise<InterviewStageOutput> {
 		const query = `
     mutation UpdateInterviewStage($input: UpdateInterviewStageInput!) {
@@ -614,10 +612,8 @@ export class GraphQLService {
         id
         name
         feedback
-        interviewerName
         rating
         nextStepNotes
-        comments
         createdAt
         updatedAt
         createdBy
@@ -628,7 +624,7 @@ export class GraphQLService {
 
 		const { updateInterviewStage } = await this.query<{
 			updateInterviewStage: InterviewStageOutput;
-		}>(query, { input: stage });
+		}>(query, { input });
 
 		return updateInterviewStage;
 	}

@@ -6,6 +6,7 @@ import { CandidateListResponse, CandidateOutput } from "../types/outputs";
 import { CandidateSortField, SortOrder } from "../types/sort";
 import { HistoryService } from "../utils/history.service";
 import { runTransaction } from "../utils";
+import { UpdateCandidateInput } from "../types/inputs";
 
 @Resolver(() => CandidateEntity)
 export class CandidateResolver {
@@ -147,26 +148,21 @@ export class CandidateResolver {
 
 	@Mutation(() => CandidateOutput)
 	async updateCandidate(
-		@Arg("id", () => ID) id: string,
-		@Arg("firstName", { nullable: true }) firstName?: string,
-		@Arg("lastName", { nullable: true }) lastName?: string,
-		@Arg("email", { nullable: true }) email?: string,
-		@Arg("phone", { nullable: true }) phone?: string,
-		@Arg("currentLocation", { nullable: true }) currentLocation?: string,
-		@Arg("citizenship", { nullable: true }) citizenship?: string,
-		@Arg("status", () => CandidateStatus, { nullable: true })
-		status?: CandidateStatus
+		@Arg("input") input: UpdateCandidateInput
 	): Promise<CandidateOutput> {
 		const repository = this.candidateRepository();
-		const candidate = await repository.findOneOrFail({ where: { id } });
+		const candidate = await repository.findOneOrFail({
+			where: { id: input.id },
+		});
 
-		if (firstName) candidate.firstName = firstName;
-		if (lastName) candidate.lastName = lastName;
-		if (email) candidate.email = email;
-		if (phone !== undefined) candidate.phone = phone;
-		if (currentLocation) candidate.currentLocation = currentLocation;
-		if (citizenship) candidate.citizenship = citizenship;
-		if (status) candidate.status = status;
+		if (input.firstName) candidate.firstName = input.firstName;
+		if (input.lastName) candidate.lastName = input.lastName;
+		if (input.email) candidate.email = input.email;
+		if (input.phone !== undefined) candidate.phone = input.phone;
+		if (input.currentLocation)
+			candidate.currentLocation = input.currentLocation;
+		if (input.citizenship) candidate.citizenship = input.citizenship;
+		if (input.status) candidate.status = input.status;
 
 		return runTransaction(this.dataSource, async (manager) => {
 			const response = await manager.save(candidate);

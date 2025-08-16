@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import type { CreateJobApplicationInput } from '../../../types';
+import type { CreateJobApplicationInput } from '../../types';
 import { JobCard } from './JobCard';
 
 interface JobsSectionProps {

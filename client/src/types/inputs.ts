@@ -39,7 +39,6 @@ export interface UpdateInterviewStageInput {
 	rating?: number;
 	progressToNextStage: boolean;
 	nextStepNotes?: string;
-	jobApplicationId: string;
 }
 
 export interface CreateJobApplicationInput {

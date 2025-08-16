@@ -6,13 +6,12 @@ import type { CandidateOutput } from '../../types/outputs';
 
 type FeedbackEditProps = {
     candidateId: string;
-    jobId: string;
     interviewStageId: string;
     onCancel: (candidateId: string) => void;
     onSubmit: (candidateId: string) => void;
 };
 
-function FeedbackEdit({ candidateId, jobId, interviewStageId, onCancel, onSubmit }: FeedbackEditProps) {
+function FeedbackEdit({ candidateId, interviewStageId, onCancel, onSubmit }: FeedbackEditProps) {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [selectedCandidate, setSelectedCandidate] = useState<CandidateOutput | null>(null);
@@ -83,7 +82,6 @@ function FeedbackEdit({ candidateId, jobId, interviewStageId, onCancel, onSubmit
                 feedback: feedbackForm.feedback.trim(),
                 nextStepNotes: feedbackForm.nextStepNotes.trim(),
                 name: feedbackForm.interviewStep,
-                jobApplicationId: jobId,
                 progressToNextStage: feedbackForm.progressToNextStage,
             };
 
@@ -115,7 +113,7 @@ function FeedbackEdit({ candidateId, jobId, interviewStageId, onCancel, onSubmit
             <div className="mb-6">
                 <button
                     onClick={() => onCancel(candidateId)}
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-4"
+                    className="cursor-pointer text-blue-600 hover:text-blue-700 text-sm font-medium mb-4"
                 >
                     ← Back to Feedback history
                 </button>
@@ -141,7 +139,7 @@ function FeedbackEdit({ candidateId, jobId, interviewStageId, onCancel, onSubmit
                                         progressToNextStage: e.target.value === "true",
                                     }))
                                 }
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 border"
+                                className="cursor-pointer mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 border"
                             >
                                 <option value="false">No</option>
                                 <option value="true">Yes</option>
@@ -162,7 +160,7 @@ function FeedbackEdit({ candidateId, jobId, interviewStageId, onCancel, onSubmit
                                         interviewStep: e.target.value,
                                     }))
                                 }
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 border"
+                                className="cursor-pointer mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 border"
                             >
                                 <option value="">Select interview step</option>
                                 <option value="Phone Screening">Phone Screening</option>
@@ -265,14 +263,14 @@ function FeedbackEdit({ candidateId, jobId, interviewStageId, onCancel, onSubmit
                             type="button"
                             onClick={() => onCancel(candidateId)}
                             disabled={submitting}
-                            className="py-2 px-6 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="cursor-pointer py-2 px-6 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="cursor-pointer py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {submitting ? "Saving..." : "Update Feedback"}
                         </button>

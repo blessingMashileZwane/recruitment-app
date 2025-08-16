@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import type { CreateCandidateSkillInput } from '../../../types';
+import type { CreateCandidateSkillInput } from '../../types';
 import { SkillCard } from './SkillCard';
 
 interface SkillsSectionProps {

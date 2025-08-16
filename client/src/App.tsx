@@ -7,12 +7,12 @@ import CandidatesList from './components/candidate/CandidatesList';
 import CandidateDetails from './components/candidate/detail/CandidateDetails';
 import { CandidateEdit } from './components/candidate/detail/CandidateEdit';
 import CandidateForm from './components/candidate/form/CandidateForm';
-import { JobApplicationEdit } from './components/candidate/jobApplication/JobApplicationEdit';
-import { SkillEdit } from './components/candidate/skill/SkillEdit';
 import FeedbackEdit from './components/feedback/FeedbackEdit';
 import FeedbackForm from './components/feedback/FeedbackForm';
 import FeedbackHistory from './components/feedback/FeedbackHistory';
+import { JobApplicationEdit } from './components/jobApplication/JobApplicationEdit';
 import Login from './components/Login';
+import { SkillEdit } from './components/skill/SkillEdit';
 
 
 type ViewState =
@@ -55,7 +55,7 @@ function App() {
               <nav className="flex space-x-4">
                 <button
                   onClick={() => setCurrentView({ view: "candidates" })}
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${currentView.view !== "add-candidate"
+                  className={`cursor-pointer px-3 py-2 rounded-md text-sm font-medium ${currentView.view !== "add-candidate"
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-500 hover:text-gray-700"
                     }`}
@@ -64,7 +64,7 @@ function App() {
                 </button>
                 <button
                   onClick={() => { setCurrentView({ view: "add-candidate" }) }}
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${currentView.view === "add-candidate"
+                  className={`cursor-pointer px-3 py-2 rounded-md text-sm font-medium ${currentView.view === "add-candidate"
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-500 hover:text-gray-700"
                     }`}
@@ -85,7 +85,7 @@ function App() {
                   onClick={logout}
                   className="text-gray-400 hover:text-gray-600"
                 >
-                  <LogOut className="h-5 w-5" />
+                  <LogOut className="cursor-pointer h-5 w-5" />
                 </button>
               </div>
             </div>
@@ -196,7 +196,7 @@ function App() {
                   setCurrentView({ view: "candidates" });
                   return null;
                 }
-                return <FeedbackEdit jobId={selectedJobApplicationId} candidateId={selectedCandidateId} interviewStageId={selectedInterviewStageId} onCancel={() => setCurrentView({ view: 'feedback-history', candidateId: selectedCandidateId })} onSubmit={() => setCurrentView({ view: 'feedback-history', candidateId: selectedCandidateId })} />
+                return <FeedbackEdit candidateId={selectedCandidateId} interviewStageId={selectedInterviewStageId} onCancel={() => setCurrentView({ view: 'feedback-history', candidateId: selectedCandidateId })} onSubmit={() => setCurrentView({ view: 'feedback-history', candidateId: selectedCandidateId })} />
 
               case "edit-skill":
                 if (!selectedCandidateId || !selectedSkillId) {

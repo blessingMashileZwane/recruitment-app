@@ -4,7 +4,10 @@ import { InterviewStageEntity, JobApplicationEntity } from "../entities";
 import { DataSource } from "typeorm";
 import { InterviewStageOutput } from "../types/outputs";
 import { runTransaction } from "../utils";
-import { CreateInterviewStageInput } from "../types/inputs";
+import {
+	CreateInterviewStageInput,
+	UpdateInterviewStageInput,
+} from "../types/inputs";
 
 @Resolver(() => InterviewStageEntity)
 export class InterviewStageResolver {
@@ -77,22 +80,18 @@ export class InterviewStageResolver {
 
 	@Mutation(() => InterviewStageOutput)
 	async updateInterviewStage(
-		@Arg("id", () => ID) id: string,
-		@Arg("name", { nullable: true }) name?: string,
-		@Arg("feedback", { nullable: true }) feedback?: string,
-		@Arg("rating", { nullable: true }) rating?: number,
-		@Arg("nextStepNotes", { nullable: true }) nextStepNotes?: string
+		@Arg("input") input: UpdateInterviewStageInput
 	): Promise<InterviewStageOutput> {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
 		const stage = await repository.findOneOrFail({
-			where: { id },
-			relations: ["jobApplication"],
+			where: { id: input.id },
 		});
 
-		if (name !== undefined) stage.name = name;
-		if (feedback !== undefined) stage.feedback = feedback;
-		if (rating !== undefined) stage.rating = rating;
-		if (nextStepNotes !== undefined) stage.nextStepNotes = nextStepNotes;
+		if (input.name !== undefined) stage.name = input.name;
+		if (input.feedback !== undefined) stage.feedback = input.feedback;
+		if (input.rating !== undefined) stage.rating = input.rating;
+		if (input.nextStepNotes !== undefined)
+			stage.nextStepNotes = input.nextStepNotes;
 
 		return runTransaction(this.dataSource, async (manager) => {
 			const response = await manager.save(stage);

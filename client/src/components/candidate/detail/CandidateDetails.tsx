@@ -1,5 +1,6 @@
 import { AlertCircle, Award, Clock, Edit, Globe, GraduationCap, Mail, MapPin, MessageSquare, Phone, User } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { graphqlService } from "../../../services/graphql.service";
 import { AppliedJob, CandidateStatus } from "../../../types/enums";
 import type { CandidateOutput, CandidateSkillOutput, JobApplicationOutput } from "../../../types/outputs";
@@ -58,13 +59,37 @@ function CandidateDetails({
         }
     };
 
+    const handleStatusUpdate = async () => {
+        if (!selectedCandidate) return;
+
+        const newStatus = selectedCandidate.status === CandidateStatus.OPEN
+            ? CandidateStatus.CLOSED
+            : CandidateStatus.OPEN;
+
+        setLoading(true);
+        try {
+            const { createdAt, updatedAt, ...updateFields } = selectedCandidate;
+            await graphqlService.updateCandidate({ ...updateFields, status: newStatus });
+            toast.success(`Candidate status updated to ${newStatus}`);
+        } catch (error) {
+            console.error("Failed to update candidate status:", error);
+            toast.error("Failed to update candidate status");
+        } finally {
+            loadCandidateDetails();
+            setLoading(false);
+        }
+    };
 
     const getStatusColor = (status: CandidateOutput["status"]) => {
         const colors = {
-            [CandidateStatus.OPEN]: "bg-green-100 text-green-800",
-            [CandidateStatus.CLOSED]: "bg-red-100 text-red-800",
+            [CandidateStatus.OPEN]: "bg-green-100 text-green-800 hover:bg-green-200",
+            [CandidateStatus.CLOSED]: "bg-red-100 text-red-800 hover:bg-red-200",
         };
         return colors[status];
+    };
+
+    const getNextStatusText = (currentStatus: CandidateOutput["status"]) => {
+        return currentStatus === CandidateStatus.OPEN ? "Close" : "Reopen";
     };
 
     if (loading) {
@@ -117,7 +142,7 @@ function CandidateDetails({
             <div className="bg-white shadow rounded-lg p-6">
                 <button
                     onClick={onBack}
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-4 flex items-center"
+                    className="cursor-pointer text-blue-600 hover:text-blue-700 text-sm font-medium mb-4 flex items-center"
                 >
                     ← Back to Candidates
                 </button>
@@ -131,16 +156,26 @@ function CandidateDetails({
                             <h1 className="text-2xl font-bold text-gray-900">
                                 {selectedCandidate?.firstName} {selectedCandidate?.lastName}
                             </h1>
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${selectedCandidate && getStatusColor(selectedCandidate.status)}`}>
-                                {selectedCandidate?.status}
-                            </span>
+                            <div className="flex items-center space-x-2 mt-1">
+                                <button
+                                    onClick={handleStatusUpdate}
+                                    disabled={loading}
+                                    className={`cursor-pointer inline-flex items-center px-3 py-1 rounded-full text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${selectedCandidate && getStatusColor(selectedCandidate.status)}`}
+                                    title={`Click to ${selectedCandidate ? getNextStatusText(selectedCandidate.status).toLowerCase() : ''} candidate`}
+                                >
+                                    {selectedCandidate?.status}
+                                </button>
+                                <span className="text-xs text-gray-500">
+                                    Click to {selectedCandidate ? getNextStatusText(selectedCandidate.status).toLowerCase() : ''}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
                     <div className="flex">
                         <button
                             onClick={() => onViewEdit(candidateId)}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                            className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                         >
                             <Edit className="h-4 w-4 mr-2" />
                             Edit Candidate
@@ -186,7 +221,7 @@ function CandidateDetails({
                         </div>
 
                         {selectedCandidate?.resumeUrl && (
-                            <div className="mt-6 pt-6 border-t border-gray-200">
+                            <div className="cursor-pointer mt-6 pt-6 border-t border-gray-200">
                                 <p className="text-sm text-gray-500 mb-2">Resume</p>
 
                                 <a
@@ -202,7 +237,7 @@ function CandidateDetails({
                     </div>
                 </div>
 
-                {/* Skills & Education */}
+                {/* Skills & Education - keeping existing code */}
                 <div className="space-y-6">
                     {selectedCandidateSkill && selectedCandidateSkill.map((skill, index) => (
                         <div key={skill.id} className="bg-white shadow rounded-lg p-6">
@@ -213,7 +248,7 @@ function CandidateDetails({
                                 </h3>
                                 <button
                                     onClick={() => onEditSkill(skill.id)}
-                                    className="text-gray-400 hover:text-gray-600"
+                                    className="cursor-pointer text-gray-400 hover:text-gray-600"
                                 >
                                     <Edit className="h-4 w-4" />
                                 </button>
@@ -262,7 +297,7 @@ function CandidateDetails({
                 </div>
             </div>
 
-            {/* Job Applications */}
+            {/* Job Applications - keeping existing code */}
             {
                 selectedJobApplication && selectedJobApplication.length > 0 && (
                     <div className="bg-white shadow rounded-lg p-6">
@@ -293,14 +328,14 @@ function CandidateDetails({
                                         <div className="flex space-x-2">
                                             <button
                                                 onClick={() => onViewFeedback(job.id)}
-                                                className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded hover:bg-blue-200"
+                                                className="cursor-pointer inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded hover:bg-blue-200"
                                             >
                                                 <MessageSquare className="h-3 w-3 mr-1" />
                                                 Feedback
                                             </button>
                                             <button
                                                 onClick={() => onEditJobApplication(job.id)}
-                                                className="text-gray-400 hover:text-gray-600"
+                                                className="cursor-pointer text-gray-400 hover:text-gray-600"
                                             >
                                                 <Edit className="h-4 w-4" />
                                             </button>

@@ -1,7 +1,7 @@
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
-import type { CreateCandidateSkillInput } from '../../../types';
-import { FormField } from '../../ui/FormField';
+import type { CreateCandidateSkillInput } from '../../types';
+import { FormField } from '../ui/FormField';
 
 interface SkillModalProps {
     isOpen: boolean;
@@ -37,7 +37,7 @@ export function SkillModal({
                     <h3 className="text-lg font-semibold">
                         {isEditing ? 'Edit Skill' : 'Add Skill'}
                     </h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                    <button onClick={onClose} className="cursor-pointer text-gray-400 hover:text-gray-600">
                         <X className="h-6 w-6" />
                     </button>
                 </div>
@@ -78,14 +78,14 @@ export function SkillModal({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                        className="cursor-pointer py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                     >
                         Cancel
                     </button>
                     <button
                         type="button"
                         onClick={handleSubmit}
-                        className="py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                        className="cursor-pointer py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                     >
                         {isEditing ? 'Update' : 'Add'} Skill
                     </button>

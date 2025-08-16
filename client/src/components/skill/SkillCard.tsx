@@ -1,5 +1,5 @@
 import { Edit, Trash2 } from 'lucide-react';
-import type { CreateCandidateSkillInput } from '../../../types';
+import type { CreateCandidateSkillInput } from '../../types';
 
 interface SkillCardProps {
     skill: CreateCandidateSkillInput;
@@ -30,14 +30,14 @@ export function SkillCard({ skill, index, onEdit, onDelete }: SkillCardProps) {
                     <button
                         type="button"
                         onClick={() => onEdit(index)}
-                        className="text-blue-600 hover:text-blue-800"
+                        className="cursor-pointer text-blue-600 hover:text-blue-800"
                     >
                         <Edit className="h-4 w-4" />
                     </button>
                     <button
                         type="button"
                         onClick={() => onDelete(index)}
-                        className="text-red-600 hover:text-red-800"
+                        className="cursor-pointer text-red-600 hover:text-red-800"
                     >
                         <Trash2 className="h-4 w-4" />
                     </button>

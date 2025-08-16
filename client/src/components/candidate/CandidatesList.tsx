@@ -126,7 +126,7 @@ function CandidateList({ onViewDetails }: CandidateListProps) {
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                            className="border rounded px-2 py-1 text-sm"
+                            className="cursor-pointer border rounded px-2 py-1 text-sm"
                         >
                             {statusOptions.map((status) => (
                                 <option key={status} value={status}>{status}</option>
@@ -136,7 +136,7 @@ function CandidateList({ onViewDetails }: CandidateListProps) {
                         <select
                             value={appliedJobFilter}
                             onChange={(e) => setAppliedJobFilter(e.target.value as AppliedJobFilter)}
-                            className="border rounded px-2 py-1 text-sm"
+                            className="cursor-pointer border rounded px-2 py-1 text-sm"
                         >
                             {appliedJobOptions.map((job) => (
                                 <option key={job} value={job}>{job}</option>
@@ -146,7 +146,7 @@ function CandidateList({ onViewDetails }: CandidateListProps) {
                         <select
                             value={appliedJobStatusFilter}
                             onChange={(e) => setAppliedJobStatusFilter(e.target.value as AppliedJobStatusFilter)}
-                            className="border rounded px-2 py-1 text-sm"
+                            className="cursor-pointer border rounded px-2 py-1 text-sm"
                         >
                             {appliedJobStatusOptions.map((status) => (
                                 <option key={status} value={status}>{status}</option>
@@ -156,7 +156,7 @@ function CandidateList({ onViewDetails }: CandidateListProps) {
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value as CandidateSortField)}
-                            className="border rounded px-2 py-1 text-sm"
+                            className="cursor-pointer border rounded px-2 py-1 text-sm"
                         >
                             <option value="FIRST_NAME">First Name</option>
                             <option value="LAST_NAME">Last Name</option>
@@ -166,7 +166,7 @@ function CandidateList({ onViewDetails }: CandidateListProps) {
                         <select
                             value={sortOrder}
                             onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-                            className="border rounded px-2 py-1 text-sm"
+                            className="cursor-pointer border rounded px-2 py-1 text-sm"
                         >
                             <option value={SortOrder.ASC}>Asc</option>
                             <option value={SortOrder.DESC}>Desc</option>

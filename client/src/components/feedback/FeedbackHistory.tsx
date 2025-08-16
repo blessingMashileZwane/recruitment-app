@@ -69,7 +69,7 @@ function FeedbackHistory({ candidateId, jobId, onBack, onAddFeedback, onEditFeed
                                     setError(null);
                                     onBack();
                                 }}
-                                className="py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                                className="cursor-pointer py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                             >
                                 Go Back
                             </button>
@@ -78,7 +78,7 @@ function FeedbackHistory({ candidateId, jobId, onBack, onAddFeedback, onEditFeed
                                     setError(null);
                                     loadFeedback();
                                 }}
-                                className="py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                                className="cursor-pointer py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                             >
                                 Try Again
                             </button>
@@ -91,7 +91,7 @@ function FeedbackHistory({ candidateId, jobId, onBack, onAddFeedback, onEditFeed
             <div className="bg-white shadow rounded-lg p-6">
                 <button
                     onClick={onBack}
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-4"
+                    className="cursor-pointer text-blue-600 hover:text-blue-700 text-sm font-medium mb-4"
                 >
                     ← Back to Candidate
                 </button>
@@ -102,7 +102,7 @@ function FeedbackHistory({ candidateId, jobId, onBack, onAddFeedback, onEditFeed
                     </h3>
                     <button
                         onClick={() => onAddFeedback(jobId)}
-                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                        className="cursor-pointer inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                     >
                         <Plus className="h-4 w-4 mr-2" />
                         Add Feedback

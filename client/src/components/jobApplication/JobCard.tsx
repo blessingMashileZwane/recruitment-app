@@ -1,6 +1,6 @@
 import { Check, Edit, Trash2 } from 'lucide-react';
-import { AppliedJob, AppliedJobStatus } from '../../../types/enums';
-import type { CreateJobApplicationInput } from '../../../types/inputs';
+import { AppliedJob, AppliedJobStatus } from '../../types/enums';
+import type { CreateJobApplicationInput } from '../../types/inputs';
 
 interface JobCardProps {
     job: CreateJobApplicationInput;
@@ -71,14 +71,14 @@ export function JobCard({ job, index, onEdit, onDelete }: JobCardProps) {
                     <button
                         type="button"
                         onClick={() => onEdit(index)}
-                        className="text-blue-600 hover:text-blue-800"
+                        className="cursor-pointer text-blue-600 hover:text-blue-800"
                     >
                         <Edit className="h-4 w-4" />
                     </button>
                     <button
                         type="button"
                         onClick={() => onDelete(index)}
-                        className="text-red-600 hover:text-red-800"
+                        className="cursor-pointer text-red-600 hover:text-red-800"
                     >
                         <Trash2 className="h-4 w-4" />
                     </button>

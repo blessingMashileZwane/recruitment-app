@@ -32,7 +32,7 @@ function FeedbackItem({
             <p className="text-xs text-gray-500 mt-2">{interviewStage.createdAt}</p>
             <div className="flex"><button
                 onClick={() => onEditFeedback(interviewStage.id)}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                className="cursor-pointer inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
             >
                 Edit Feedback
             </button></div>

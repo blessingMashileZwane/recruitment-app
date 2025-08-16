@@ -1,11 +1,11 @@
 import { AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { graphqlService } from '../../../services/graphql.service';
-import { AppliedJob, AppliedJobStatus } from '../../../types/enums';
-import type { CreateJobApplicationInput, UpdateJobApplicationInput } from '../../../types/inputs';
-import { LoadingOverlay } from '../../ui/LoadingOverlay';
-import { JobModal } from '../form/JobModal';
+import { graphqlService } from '../../services/graphql.service';
+import { AppliedJob, AppliedJobStatus } from '../../types/enums';
+import type { CreateJobApplicationInput, UpdateJobApplicationInput } from '../../types/inputs';
+import { LoadingOverlay } from '../ui/LoadingOverlay';
+import { JobModal } from './JobModal';
 
 interface JobApplicationEditProps {
     jobApplicationId: string;
@@ -93,7 +93,7 @@ export function JobApplicationEdit({ jobApplicationId, candidateId, onCancel, on
                         <div className="flex justify-end space-x-3">
                             <button
                                 onClick={() => setError(null)}
-                                className="py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                                className="cursor-pointer py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                             >
                                 Close
                             </button>
@@ -102,7 +102,7 @@ export function JobApplicationEdit({ jobApplicationId, candidateId, onCancel, on
                                     setError(null);
                                     loadJobApplication();
                                 }}
-                                className="py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                                className="cursor-pointer py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                             >
                                 Try Again
                             </button>
