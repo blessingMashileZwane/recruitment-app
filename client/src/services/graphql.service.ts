@@ -12,6 +12,7 @@ import type {
 	UpdateJobApplicationInput,
 } from "../types/inputs";
 import type {
+	BulkCreateCandidatesOutput,
 	CandidateListResponse,
 	CandidateOutput,
 	CandidateSkillOutput,
@@ -173,8 +174,6 @@ export class GraphQLService {
     }
   `;
 
-		console.log({ id });
-
 		const { candidate } = await this.query<{ candidate: CandidateOutput }>(
 			query,
 			{ id }
@@ -233,68 +232,62 @@ export class GraphQLService {
 		return createFullCandidate;
 	}
 
-	async addCandidatesBulk(candidates: CreateCandidateInput[]): Promise<{
-		success: CandidateOutput[];
-		failed: { email: string; reason: string }[];
-	}> {
+	async addCandidatesBulk(
+		candidates: CreateCandidateInput[]
+	): Promise<BulkCreateCandidatesOutput> {
 		const query = `
-    mutation BulkCreateCandidates($fullCandidates: [CreateCandidateInput!]!) {
-      bulkCreateCandidates(input: $fullCandidates) {
-        success {
+  mutation AddCandidatesBulkOptimized($input: [CreateCandidateInput!]!, $batchSize: Int) {
+    addCandidatesBulkOptimized(input: $input, batchSize: $batchSize) {
+      success {
+        id
+        firstName
+        lastName
+        email
+        phone
+        currentLocation
+        citizenship
+        status
+        resumeUrl
+        candidateSkill {
           id
-          firstName
-          lastName
-          email
-          phone
-          currentLocation
-          citizenship
-          status
-          resumeUrl
-          createdAt
-          updatedAt
-          createdBy
-          updatedBy
-          candidateSkill {
-            id
-            university
-            qualification
-            proficiencyLevel
-            yearsOfExperience
-            createdAt
-            updatedAt
-            createdBy
-            updatedBy
-          }
-          jobApplications {
-            id
-            title
-            appliedJob
-            applicationStatus
-            department
-            requirements
-            isActive
-            createdAt
-            updatedAt
-            createdBy
-            updatedBy
-          }
+          university
+          qualification
+          yearsOfExperience
+          proficiencyLevel
+          possessedSkills
         }
-        failed {
-          email
-          reason
+        jobApplications {
+          id
+          appliedJob
+          applicationStatus
+          appliedJobOther
+          isActive
         }
       }
+      failed {
+        email
+        reason
+      }
+      totalProcessed
+      successCount
+      failureCount
+      processingTimeMs
     }
-  `;
+  }
+`;
 
-		const { bulkCreateCandidates } = await this.query<{
-			bulkCreateCandidates: {
+		const { addCandidatesBulkOptimized } = await this.query<{
+			addCandidatesBulkOptimized: {
 				success: CandidateOutput[];
 				failed: { email: string; reason: string }[];
+				totalProcessed: number;
+				successCount: number;
+				failureCount: number;
+				processingTimeMs: number;
 			};
-		}>(query, { fullCandidates: candidates });
+		}>(query, { input: candidates, batchSize: 10 });
 
-		return bulkCreateCandidates;
+		return addCandidatesBulkOptimized;
 	}
 
 	async updateCandidate(input: UpdateCandidateInput): Promise<CandidateOutput> {
@@ -430,8 +423,6 @@ export class GraphQLService {
     }
   `;
 
-		console.log("Updating skill:", { skill });
-
 		const { updateCandidateSkill } = await this.query<{
 			updateCandidateSkill: CandidateSkillOutput;
 		}>(query, { input: skill });
@@ -461,8 +452,6 @@ export class GraphQLService {
 			getJobApplicationById: JobApplicationOutput;
 		}>(query, { id });
 
-		console.log({ getJobApplicationById });
-
 		return getJobApplicationById;
 	}
 
@@ -489,8 +478,6 @@ export class GraphQLService {
 		const { jobApplicationsByCandidateId } = await this.query<{
 			jobApplicationsByCandidateId: JobApplicationOutput[];
 		}>(query, { candidateId });
-
-		console.log({ jobApplicationsByCandidateId });
 
 		return jobApplicationsByCandidateId;
 	}
@@ -648,8 +635,6 @@ export class GraphQLService {
       }
     }
   `;
-
-		console.log({ stageData });
 
 		const { addInterviewStageToJob } = await this.query<{
 			addInterviewStageToJob: InterviewStageOutput;

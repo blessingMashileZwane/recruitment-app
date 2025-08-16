@@ -60,6 +60,20 @@ export interface CandidateOutput {
 	updatedBy: string;
 }
 
+export interface BulkCreateFailure {
+	email: string;
+	reason: string;
+}
+
+export interface BulkCreateCandidatesOutput {
+	success: CandidateOutput[];
+	failed: BulkCreateFailure[];
+	totalProcessed: number;
+	successCount: number;
+	failureCount: number;
+	processingTimeMs: number;
+}
+
 export interface CandidateListResponse {
 	items: CandidateOutput[];
 	total: number;

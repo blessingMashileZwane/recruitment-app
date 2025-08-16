@@ -31,7 +31,6 @@ function FeedbackHistory({ candidateId, jobId, onBack, onAddFeedback, onEditFeed
                 graphqlService.getCandidateById(candidateId)
             ]);
             setFeedback(feedbackData);
-            console.log({ feedbackData })
             setSelectedCandidate(candidateData);
         } catch (error) {
             setError("Failed to load feedback or candidate data.");

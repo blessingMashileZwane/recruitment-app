@@ -42,7 +42,6 @@ export class InterviewStageResolver {
 			where: { jobApplication: { id: jobApplicationId } },
 			relations: ["jobApplication", "history"],
 		});
-		console.log("Interview stages for job:", res);
 		return res;
 	}
 

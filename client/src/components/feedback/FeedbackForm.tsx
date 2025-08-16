@@ -29,7 +29,6 @@ function FeedbackForm({ candidateId, jobId, onViewFeedback }: FeedbackFormProps)
     });
 
     useEffect(() => {
-        console.log({ jobId });
         const loadCandidate = async () => {
             setLoading(true);
             try {

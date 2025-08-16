@@ -29,7 +29,6 @@ function CandidateDetails({
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        console.log("Loading Candidate Details for ID:", candidateId);
         loadCandidateDetails();
     }, [candidateId]);
 
@@ -46,11 +45,6 @@ function CandidateDetails({
             setSelectedCandidateSkill(candidateSkill);
             setSelectedJobApplication(jobApplications);
 
-            console.log("Candidate Details Loaded: ", {
-                candidate,
-                candidateSkill,
-                jobApplications
-            });
         } catch (error) {
             setError("Failed to load candidate details. Please try again.");
             console.error("Failed to load candidate details:", error);

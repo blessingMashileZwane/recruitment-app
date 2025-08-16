@@ -129,7 +129,6 @@ function App() {
                       setCurrentView({ view: "feedback-history", candidateId: id });
                     }}
                     onViewEdit={(id) => {
-                      console.log("Edit Candidate:", id);
                       setSelectedCandidateId(id);
                       setCurrentView({ view: "edit-candidate", candidateId: id });
                     }}

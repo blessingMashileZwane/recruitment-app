@@ -30,7 +30,6 @@ function FeedbackEdit({ candidateId, interviewStageId, onCancel, onSubmit }: Fee
     });
 
     useEffect(() => {
-        console.log({ interviewStageId })
         const loadData = async () => {
             setLoading(true);
             try {

@@ -40,7 +40,6 @@ export class HistoryService {
 				candidateHistory.resumeUrl = entity.resumeUrl ?? "";
 				candidateHistory.createdBy = userId;
 				await manager.save(candidateHistory);
-				console.log(`History record created for CandidateEntity: ${entity.id}`);
 				break;
 
 			case "CandidateSkillEntity":
@@ -54,9 +53,6 @@ export class HistoryService {
 				skillHistory.possessedSkills = entity.possessedSkills ?? "";
 				skillHistory.createdBy = userId;
 				await manager.save(skillHistory);
-				console.log(
-					`History record created for CandidateSkillEntity: ${entity.id}`
-				);
 				break;
 
 			case "JobApplicationEntity":
@@ -70,9 +66,6 @@ export class HistoryService {
 				jobHistory.isActive = entity.isActive ?? true;
 				jobHistory.createdBy = userId;
 				await manager.save(jobHistory);
-				console.log(
-					`History record created for JobApplicationEntity: ${entity.id}`
-				);
 				break;
 
 			case "InterviewStageEntity":
@@ -86,9 +79,6 @@ export class HistoryService {
 				stageHistory.createdBy = userId;
 				stageHistory.progressToNextStage = entity.progressToNextStage ?? false;
 				await manager.save(stageHistory);
-				console.log(
-					`History record created for InterviewStageEntity: ${entity.id}`
-				);
 				break;
 
 			default:

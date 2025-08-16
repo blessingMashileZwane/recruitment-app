@@ -158,7 +158,7 @@ export class CandidateOutput {
 }
 
 @ObjectType()
-class FailedCandidate {
+export class BulkCreateFailure {
 	@Field()
 	email: string;
 
@@ -171,8 +171,20 @@ export class BulkCreateCandidatesOutput {
 	@Field(() => [CandidateOutput])
 	success: CandidateOutput[];
 
-	@Field(() => [FailedCandidate])
-	failed: FailedCandidate[];
+	@Field(() => [BulkCreateFailure])
+	failed: BulkCreateFailure[];
+
+	@Field()
+	totalProcessed: number;
+
+	@Field()
+	successCount: number;
+
+	@Field()
+	failureCount: number;
+
+	@Field()
+	processingTimeMs: number;
 }
 
 @ObjectType()
