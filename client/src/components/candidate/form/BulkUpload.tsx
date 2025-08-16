@@ -16,7 +16,7 @@ export function BulkUpload({ onUploadComplete }: BulkUploadProps) {
             await candidateService.processBulkUpload(file);
             onUploadComplete?.();
         } catch (error) {
-            // Error is already handled in the service
+            console.error('Error processing bulk upload:', error);
         }
     };
 

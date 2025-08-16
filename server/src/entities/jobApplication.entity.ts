@@ -9,6 +9,8 @@ import {
 	OneToOne,
 	BeforeInsert,
 	BeforeUpdate,
+	RelationId,
+	JoinColumn,
 } from "typeorm";
 import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
 import { JobApplicationHistoryEntity } from "./jobApplicationHistory.entity";
@@ -33,6 +35,12 @@ export class JobApplicationEntity {
 	@Field(() => ID)
 	@PrimaryGeneratedColumn("uuid")
 	id: string;
+
+	@Field()
+	@RelationId(
+		(jobApplication: JobApplicationEntity) => jobApplication.candidate
+	)
+	candidateId: string;
 
 	@Field(() => AppliedJob)
 	@Column({
@@ -60,6 +68,7 @@ export class JobApplicationEntity {
 
 	@Field(() => CandidateEntity)
 	@ManyToOne(() => CandidateEntity, (candidate) => candidate.jobApplications)
+	@JoinColumn({ name: "candidate_id" })
 	candidate: CandidateEntity;
 
 	@Field(() => [InterviewStageEntity])

@@ -1,15 +1,15 @@
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
-import type { SkillData } from '../../../types/candidate';
+import type { CreateCandidateSkillInput } from '../../../types';
 import { FormField } from '../../ui/FormField';
 
 interface SkillModalProps {
     isOpen: boolean;
-    skill: SkillData;
+    skill: CreateCandidateSkillInput;
     isEditing: boolean;
     onClose: () => void;
-    onSubmit: (skill: SkillData) => void;
-    onSkillChange: (updater: (prev: SkillData) => SkillData) => void;
+    onSubmit: (skill: CreateCandidateSkillInput) => void;
+    onSkillChange: (updater: (prev: CreateCandidateSkillInput) => CreateCandidateSkillInput) => void;
 }
 
 export function SkillModal({

@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { BulkUpload } from './BulkUpload';
-import { BasicInfoForm } from './BasicInfoForm';
-import { SkillModal } from './SkillModal';
-import { JobModal } from './JobModal';
-import { SkillsSection } from './SkillsSection';
-import { JobsSection } from './JobsSection';
-import type { CandidateFormData, JobData, ModalType, SkillData } from '../../../types/candidate';
 import { candidateService } from '../../../services/candidateService';
-import { CandidateStatus } from '../../../types/enums';
-import type { CreateCandidateInput } from '../../../types/inputs';
+import type { CandidateFormData, ModalType } from '../../../types/candidate';
+import { AppliedJob, AppliedJobStatus, CandidateStatus } from '../../../types/enums';
+import type { CreateCandidateInput, CreateCandidateSkillInput, CreateJobApplicationInput } from '../../../types/inputs';
 import { LoadingOverlay } from '../../ui/LoadingOverlay';
+import { BasicInfoForm } from './BasicInfoForm';
+import { BulkUpload } from './BulkUpload';
+import { JobModal } from './JobModal';
+import { JobsSection } from './JobsSection';
+import { SkillModal } from './SkillModal';
+import { SkillsSection } from './SkillsSection';
 
 function CandidateForm() {
     const [loading, setLoading] = useState(false);
@@ -28,20 +28,21 @@ function CandidateForm() {
         resumeUrl: "",
     });
 
-    const [skills, setSkills] = useState<SkillData[]>([]);
-    const [jobs, setJobs] = useState<JobData[]>([]);
+    const [skills, setSkills] = useState<CreateCandidateSkillInput[]>([]);
+    const [jobs, setJobs] = useState<CreateJobApplicationInput[]>([]);
 
-    const [currentSkill, setCurrentSkill] = useState<SkillData>({
+    const [currentSkill, setCurrentSkill] = useState<CreateCandidateSkillInput>({
         university: "",
         qualification: "",
         proficiencyLevel: 1,
+        yearsOfExperience: 0,
+        possessedSkills: "",
     });
 
-    const [currentJob, setCurrentJob] = useState<JobData>({
-        title: "",
-        status: "TECH" as any,
-        department: "",
-        requirements: "",
+    const [currentJob, setCurrentJob] = useState<CreateJobApplicationInput>({
+        appliedJob: AppliedJob.TECH,
+        applicationStatus: AppliedJobStatus.ACTIVE,
+        appliedJobOther: "",
         isActive: true,
     });
 
@@ -65,15 +66,15 @@ function CandidateForm() {
             qualification: "",
             proficiencyLevel: 1,
             yearsOfExperience: 0,
+            possessedSkills: "",
         });
     };
 
     const resetCurrentJob = () => {
         setCurrentJob({
-            title: "",
-            status: "TECH" as any,
-            department: "",
-            requirements: "",
+            appliedJob: AppliedJob.TECH,
+            applicationStatus: AppliedJobStatus.ACTIVE,
+            appliedJobOther: "",
             isActive: true,
         });
     };
@@ -85,7 +86,7 @@ function CandidateForm() {
         resetCurrentJob();
     };
 
-    const handleSkillSubmit = (skill: SkillData) => {
+    const handleSkillSubmit = (skill: CreateCandidateSkillInput) => {
         if (editingIndex !== null) {
             const updatedSkills = [...skills];
             updatedSkills[editingIndex] = skill;
@@ -97,7 +98,7 @@ function CandidateForm() {
         closeModal();
     };
 
-    const handleJobSubmit = (job: JobData) => {
+    const handleJobSubmit = (job: CreateJobApplicationInput) => {
         if (editingIndex !== null) {
             const updatedJobs = [...jobs];
             updatedJobs[editingIndex] = job;
@@ -150,17 +151,33 @@ function CandidateForm() {
         setLoading(true);
 
         try {
+            const candidateSkillInput: CreateCandidateSkillInput = {
+                university: skills[0].university,
+                qualification: skills[0].qualification,
+                proficiencyLevel: skills[0].proficiencyLevel,
+                yearsOfExperience: skills[0].yearsOfExperience,
+                possessedSkills: skills[0].possessedSkills,
+            };
+
+            const jobApplicationsInput: CreateJobApplicationInput[] = jobs.map(job => ({
+                appliedJob: job.appliedJob,
+                applicationStatus: job.applicationStatus,
+                appliedJobOther: job.appliedJobOther,
+                isActive: job.isActive,
+            }));
+
             const fullCandidateInput: CreateCandidateInput = {
                 ...candidateForm,
                 status: CandidateStatus.OPEN,
-                candidateSkill: skills[0],
-                jobApplication: jobs[0]
+                candidateSkill: candidateSkillInput,
+                jobApplications: jobApplicationsInput,
             };
 
             await candidateService.createFullCandidate(fullCandidateInput);
             resetForm();
             toast.success("Candidate added successfully");
         } catch (error) {
+            console.error('Error creating candidate:', error);
             toast.error("Failed to add candidate");
         } finally {
             setLoading(false);

@@ -10,6 +10,8 @@ export interface CreateCandidateSkillInput {
 	university: string;
 	qualification: string;
 	proficiencyLevel: number;
+	yearsOfExperience: number;
+	possessedSkills?: string;
 }
 
 export interface UpdateCandidateSkillInput {
@@ -17,14 +19,16 @@ export interface UpdateCandidateSkillInput {
 	university?: string;
 	qualification?: string;
 	proficiencyLevel?: number;
+	yearsOfExperience: number;
+	possessedSkills?: string;
 }
 
 export interface CreateInterviewStageInput {
 	name: string;
 	feedback: string;
-	interviewerName: string;
 	rating: number;
 	nextStepNotes: string;
+	progressToNextStage: boolean;
 	jobApplicationId: string;
 }
 
@@ -32,17 +36,16 @@ export interface UpdateInterviewStageInput {
 	id: string;
 	name?: string;
 	feedback?: string;
-	interviewerName?: string;
 	rating?: number;
+	progressToNextStage: boolean;
 	nextStepNotes?: string;
+	jobApplicationId: string;
 }
 
 export interface CreateJobApplicationInput {
-	title: string;
 	appliedJob?: AppliedJob;
 	applicationStatus?: AppliedJobStatus;
-	department?: string;
-	requirements?: string;
+	appliedJobOther?: string;
 	isActive: boolean;
 }
 
@@ -51,8 +54,7 @@ export interface UpdateJobApplicationInput {
 	title?: string;
 	appliedJob?: AppliedJob;
 	applicationStatus?: AppliedJobStatus;
-	department?: string;
-	requirements?: string;
+	appliedJobOther?: string;
 	isActive?: boolean;
 }
 

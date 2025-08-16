@@ -55,6 +55,9 @@ export class InterviewStageOutput {
 	nextStepNotes: string;
 
 	@Field()
+	jobApplicationId: string;
+
+	@Field()
 	progressToNextStage: boolean;
 
 	@Field()
@@ -74,6 +77,9 @@ export class InterviewStageOutput {
 export class JobApplicationOutput {
 	@Field(() => ID)
 	id: string;
+
+	@Field()
+	candidateId: string;
 
 	@Field(() => AppliedJob)
 	appliedJob: AppliedJob;

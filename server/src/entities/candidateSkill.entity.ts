@@ -9,6 +9,7 @@ import {
 	OneToMany,
 	OneToOne,
 	PrimaryGeneratedColumn,
+	RelationId,
 	UpdateDateColumn,
 } from "typeorm";
 import { userContext } from "../middleware";
@@ -23,7 +24,9 @@ export class CandidateSkillEntity {
 	id: string;
 
 	@Field()
-	@Column()
+	@RelationId(
+		(candidateSkill: CandidateSkillEntity) => candidateSkill.candidate
+	)
 	candidateId: string;
 
 	@Field()
@@ -38,7 +41,7 @@ export class CandidateSkillEntity {
 	@Column()
 	yearsOfExperience: number;
 
-	@Field()
+	@Field({ nullable: true })
 	@Column({ nullable: true })
 	proficiencyLevel?: number;
 

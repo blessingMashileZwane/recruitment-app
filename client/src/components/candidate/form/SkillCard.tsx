@@ -1,8 +1,8 @@
 import { Edit, Trash2 } from 'lucide-react';
-import type { SkillData } from '../../../types/candidate';
+import type { CreateCandidateSkillInput } from '../../../types';
 
 interface SkillCardProps {
-    skill: SkillData;
+    skill: CreateCandidateSkillInput;
     index: number;
     onEdit: (index: number) => void;
     onDelete: (index: number) => void;

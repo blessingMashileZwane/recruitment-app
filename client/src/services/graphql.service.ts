@@ -156,63 +156,30 @@ export class GraphQLService {
 
 	async getCandidateById(id: string): Promise<CandidateOutput> {
 		const query = `
-      query GetCandidate($id: ID!) {
-        candidate(id: $id) {
-          id
-          firstName
-          lastName
-          email
-          phone
-          currentLocation
-          citizenship
-          status
-          resumeUrl
-          createdAt
-          updatedAt
-          candidateSkill {
-            id
-            university
-            qualification
-            proficiencyLevel
-            createdAt
-            updatedAt
-          }
-          jobApplications {
-            id
-            title
-            appliedJob
-            applicationStatus
-            department
-            description
-            requirements
-            isActive
-            createdAt
-            createdBy
-            updatedAt
-            updatedBy
-            interviewStages {
-              id
-              name
-              feedback
-              interviewerName
-              rating
-              nextStepNotes
-              createdBy
-              createdAt
-              updatedAt
-              updatedBy
-            }
-          }
-        }
+    query GetCandidate($id: ID!) {
+      candidate(id: $id) {
+        id
+        firstName
+        lastName
+        email
+        phone
+        currentLocation
+        citizenship
+        status
+        resumeUrl
+        createdAt
+        updatedAt
       }
-    `;
+    }
+  `;
+
+		console.log({ id });
 
 		const { candidate } = await this.query<{ candidate: CandidateOutput }>(
 			query,
-			{
-				id,
-			}
+			{ id }
 		);
+
 		return candidate;
 	}
 
@@ -248,11 +215,8 @@ export class GraphQLService {
         }
         jobApplications {
           id
-          title
           appliedJob
           applicationStatus
-          department
-          requirements
           isActive
           createdAt
           updatedAt
@@ -366,10 +330,10 @@ export class GraphQLService {
 
 	async getCandidateSkillByCandidateId(
 		candidateId: string
-	): Promise<CandidateSkillOutput> {
+	): Promise<CandidateSkillOutput[]> {
 		const query = `
-    query GetCandidateSkill($candidateId: ID!) {
-      candidateSkill(candidateId: $candidateId) {
+    query GetCandidateSkillsByCandidate($candidateId: ID!) {
+      candidateSkillsByCandidate(candidateId: $candidateId) {
         id
         university
         qualification
@@ -384,11 +348,11 @@ export class GraphQLService {
     }
   `;
 
-		const { candidateSkill } = await this.query<{
-			candidateSkill: CandidateSkillOutput;
+		const { candidateSkillsByCandidate } = await this.query<{
+			candidateSkillsByCandidate: CandidateSkillOutput[];
 		}>(query, { candidateId });
 
-		return candidateSkill;
+		return candidateSkillsByCandidate;
 	}
 
 	async addSkillToCandidate(
@@ -456,28 +420,15 @@ export class GraphQLService {
     query JobApplicationsByCandidateId($candidateId: ID!) {
       jobApplicationsByCandidateId(candidateId: $candidateId) {
         id
-        title
+        candidateId
         appliedJob
         applicationStatus
-        department
-        requirements
+        appliedJobOther
         isActive
         createdAt
         updatedAt
         createdBy
         updatedBy
-        interviewStages {
-          id
-          name
-          feedback
-          interviewerName
-          rating
-          nextStepNotes
-          createdAt
-          updatedAt
-          createdBy
-          updatedBy
-        }
       }
     }
   `;
@@ -485,6 +436,8 @@ export class GraphQLService {
 		const { jobApplicationsByCandidateId } = await this.query<{
 			jobApplicationsByCandidateId: JobApplicationOutput[];
 		}>(query, { candidateId });
+
+		console.log({ jobApplicationsByCandidateId });
 
 		return jobApplicationsByCandidateId;
 	}

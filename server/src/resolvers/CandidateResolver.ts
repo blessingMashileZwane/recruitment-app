@@ -107,15 +107,6 @@ export class CandidateResolver {
 	): Promise<CandidateOutput | null> {
 		return this.candidateRepository().findOne({
 			where: { id },
-			relations: [
-				"candidateSkill",
-				"candidateSkill.history",
-				"jobApplications",
-				"jobApplications.history",
-				"jobApplications.interviewStages",
-				"jobApplications.interviewStages.history",
-				"history",
-			],
 		});
 	}
 

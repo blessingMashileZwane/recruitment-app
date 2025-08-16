@@ -77,7 +77,7 @@ export class FullCandidateResolver {
 			skill.qualification = input.candidateSkill.qualification;
 			skill.proficiencyLevel = input.candidateSkill.proficiencyLevel;
 			skill.yearsOfExperience = 0;
-			skill.candidateId = candidate.id;
+			skill.candidate = candidate;
 
 			await queryRunner.manager.save(skill);
 

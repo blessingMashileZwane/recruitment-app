@@ -1,11 +1,13 @@
-import { CandidateStatus, AppliedJob, AppliedJobStatus } from "./enums";
+import { AppliedJob, AppliedJobStatus, CandidateStatus } from "./enums";
 
 export interface CandidateSkillOutput {
 	id: string;
+	candidateId: string;
 	university: string;
 	qualification: string;
 	proficiencyLevel: number;
 	yearsOfExperience: number;
+	possessedSkills?: string;
 	createdAt: string;
 	updatedAt: string;
 	createdBy: string;
@@ -16,9 +18,10 @@ export interface InterviewStageOutput {
 	id: string;
 	name: string;
 	feedback: string;
-	interviewerName: string;
 	rating: number;
 	nextStepNotes: string;
+	progressToNextStage: boolean;
+	jobApplicationId: string;
 	createdAt: string;
 	updatedAt: string;
 	createdBy: string;
@@ -27,11 +30,10 @@ export interface InterviewStageOutput {
 
 export interface JobApplicationOutput {
 	id: string;
-	title: string;
+	candidateId: string;
 	appliedJob?: AppliedJob;
 	applicationStatus?: AppliedJobStatus;
-	department?: string;
-	requirements?: string;
+	appliedJobOther?: string;
 	isActive: boolean;
 	interviewStages: InterviewStageOutput[];
 	createdAt: string;

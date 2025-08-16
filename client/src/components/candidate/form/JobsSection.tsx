@@ -1,9 +1,9 @@
 import { Plus } from 'lucide-react';
+import type { CreateJobApplicationInput } from '../../../types';
 import { JobCard } from './JobCard';
-import type { JobData } from '../../../types/candidate';
 
 interface JobsSectionProps {
-    jobs: JobData[];
+    jobs: CreateJobApplicationInput[];
     onAddJob: () => void;
     onEditJob: (index: number) => void;
     onDeleteJob: (index: number) => void;

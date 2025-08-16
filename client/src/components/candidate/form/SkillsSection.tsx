@@ -1,8 +1,9 @@
 import { Plus } from 'lucide-react';
+import type { CreateCandidateSkillInput } from '../../../types';
 import { SkillCard } from './SkillCard';
 
 interface SkillsSectionProps {
-    skills: SkillData[];
+    skills: CreateCandidateSkillInput[];
     onAddSkill: () => void;
     onEditSkill: (index: number) => void;
     onDeleteSkill: (index: number) => void;

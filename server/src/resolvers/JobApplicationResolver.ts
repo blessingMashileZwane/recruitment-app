@@ -32,15 +32,17 @@ export class JobApplicationResolver {
 		});
 	}
 
-	@Query(() => JobApplicationOutput, { nullable: true })
-	async jobApplicationByCandidateId(
+	@Query(() => [JobApplicationOutput])
+	async jobApplicationsByCandidateId(
 		@Arg("candidateId", () => ID) candidateId: string
-	): Promise<JobApplicationOutput | null> {
+	): Promise<JobApplicationOutput[]> {
 		const repository = this.dataSource.getRepository(JobApplicationEntity);
-		return repository.findOne({
+		const res = await repository.find({
 			where: { candidate: { id: candidateId } },
-			relations: ["candidate", "interviewStages", "history"],
+			relations: ["candidate"],
 		});
+		console.log("Job Applications by Candidate ID:", res);
+		return res;
 	}
 
 	@Mutation(() => JobApplicationOutput)

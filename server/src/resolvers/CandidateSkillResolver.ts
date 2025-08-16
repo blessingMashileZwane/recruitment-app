@@ -25,8 +25,7 @@ export class CandidateSkillResolver {
 	): Promise<CandidateSkillOutput[]> {
 		const repository = this.dataSource.getRepository(CandidateSkillEntity);
 		return repository.find({
-			where: { candidateId },
-			relations: ["candidate", "skill"],
+			where: { candidate: { id: candidateId } },
 		});
 	}
 

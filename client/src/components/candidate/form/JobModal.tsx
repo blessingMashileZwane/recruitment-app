@@ -1,16 +1,15 @@
 import { X } from 'lucide-react';
-import { toast } from 'sonner';
-import type { JobData } from '../../../types/candidate';
-import { AppliedJob } from '../../../types/enums';
+import { AppliedJob, AppliedJobStatus } from '../../../types/enums';
+import type { CreateJobApplicationInput } from '../../../types/inputs';
 import { FormField } from '../../ui/FormField';
 
 interface JobModalProps {
     isOpen: boolean;
-    job: JobData;
+    job: CreateJobApplicationInput;
     isEditing: boolean;
     onClose: () => void;
-    onSubmit: (job: JobData) => void;
-    onJobChange: (updater: (prev: JobData) => JobData) => void;
+    onSubmit: (job: CreateJobApplicationInput) => void;
+    onJobChange: (updater: (prev: CreateJobApplicationInput) => CreateJobApplicationInput) => void;
 }
 
 export function JobModal({
@@ -24,10 +23,6 @@ export function JobModal({
     if (!isOpen) return null;
 
     const handleSubmit = () => {
-        if (!job.title || !job.department) {
-            toast.error("Job title and department are required");
-            return;
-        }
         onSubmit(job);
     };
 
@@ -45,18 +40,6 @@ export function JobModal({
 
                 <div className="space-y-4">
                     <FormField
-                        label="Job Title"
-                        required
-                        value={job.title}
-                        onChange={(e) => onJobChange(prev => ({ ...prev, title: e.target.value }))}
-                    />
-                    <FormField
-                        label="Department"
-                        required
-                        value={job.department || ""}
-                        onChange={(e) => onJobChange(prev => ({ ...prev, department: e.target.value }))}
-                    />
-                    <FormField
                         label="Applied Job Type"
                         value={job.appliedJob || AppliedJob.TECH}
                         onChange={(e) => onJobChange(prev => ({ ...prev, appliedJob: e.target.value as AppliedJob }))}
@@ -65,11 +48,26 @@ export function JobModal({
                             label: key.charAt(0) + key.slice(1).toLowerCase()
                         }))}
                     />
+
+                    {job.appliedJob === AppliedJob.OTHER && (
+                        <FormField
+                            label="Other Job Type"
+                            value={job.appliedJobOther || ""}
+                            onChange={(e) => onJobChange(prev => ({ ...prev, appliedJobOther: e.target.value }))}
+                            placeholder="Specify the job type"
+                        />
+                    )}
+
                     <FormField
-                        label="Requirements"
-                        value={job.requirements || ""}
-                        onChange={(e) => onJobChange(prev => ({ ...prev, requirements: e.target.value }))}
+                        label="Application Status"
+                        value={job.applicationStatus || AppliedJobStatus.ACTIVE}
+                        onChange={(e) => onJobChange(prev => ({ ...prev, applicationStatus: e.target.value as AppliedJobStatus }))}
+                        options={Object.entries(AppliedJobStatus).map(([key, value]) => ({
+                            value: value,
+                            label: key.charAt(0) + key.slice(1).toLowerCase()
+                        }))}
                     />
+
                     <div className="flex items-center space-x-2">
                         <input
                             type="checkbox"

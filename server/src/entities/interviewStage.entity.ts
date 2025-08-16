@@ -8,6 +8,8 @@ import {
 	ManyToOne,
 	BeforeInsert,
 	BeforeUpdate,
+	RelationId,
+	JoinColumn,
 } from "typeorm";
 import { Field, ID, ObjectType } from "type-graphql";
 import { InterviewStageHistoryEntity } from "./interviewStageHistory.entity";
@@ -24,6 +26,12 @@ export class InterviewStageEntity {
 	@Field()
 	@Column()
 	name: string;
+
+	@Field()
+	@RelationId(
+		(interviewStage: InterviewStageEntity) => interviewStage.jobApplication
+	)
+	jobApplicationId: string;
 
 	@Field()
 	@Column()
@@ -46,6 +54,7 @@ export class InterviewStageEntity {
 		() => JobApplicationEntity,
 		(jobApplication) => jobApplication.interviewStages
 	)
+	@JoinColumn({ name: "job_application_id" })
 	jobApplication: JobApplicationEntity;
 
 	@Field(() => [InterviewStageHistoryEntity])
