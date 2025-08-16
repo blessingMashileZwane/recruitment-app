@@ -31,15 +31,15 @@ export class InterviewStageEntity {
 
 	@Field()
 	@Column()
-	interviewerName: string;
-
-	@Field()
-	@Column()
 	rating: number;
 
 	@Field()
 	@Column()
 	nextStepNotes: string;
+
+	@Field()
+	@Column()
+	progressToNextStage: boolean;
 
 	@Field(() => JobApplicationEntity)
 	@ManyToOne(

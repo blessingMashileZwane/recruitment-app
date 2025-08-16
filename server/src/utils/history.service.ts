@@ -1,4 +1,4 @@
-import { DataSource, QueryRunner } from "typeorm";
+import { DataSource, EntityManager, QueryRunner } from "typeorm";
 import {
 	CandidateHistoryEntity,
 	CandidateSkillHistoryEntity,
@@ -6,8 +6,8 @@ import {
 	JobApplicationHistoryEntity,
 } from "../entities";
 import { userContext } from "../middleware";
+import { AppliedJob, AppliedJobStatus, CandidateStatus } from "../types";
 
-// Updated HistoryService with InterviewStageEntity support
 export class HistoryService {
 	constructor(private dataSource: DataSource) {}
 
@@ -15,9 +15,12 @@ export class HistoryService {
 		entity: any,
 		entityName: string,
 		action: "CREATE" | "UPDATE" | "DELETE",
-		queryRunner?: QueryRunner
+		managerOrRunner?: QueryRunner | EntityManager
 	): Promise<void> {
-		const manager = queryRunner ? queryRunner.manager : this.dataSource.manager;
+		const manager: EntityManager =
+			managerOrRunner && "manager" in managerOrRunner
+				? managerOrRunner.manager
+				: (managerOrRunner as EntityManager) || this.dataSource.manager;
 
 		const ctx = userContext.getStore();
 		const userId = ctx?.userId ?? "system";
@@ -27,17 +30,16 @@ export class HistoryService {
 				const candidateHistory = new CandidateHistoryEntity();
 				candidateHistory.candidateId = entity.id;
 				candidateHistory.action = action;
-				candidateHistory.firstName = entity.firstName;
-				candidateHistory.lastName = entity.lastName;
-				candidateHistory.email = entity.email;
-				candidateHistory.phone = entity.phone;
-				candidateHistory.currentLocation = entity.currentLocation;
-				candidateHistory.citizenship = entity.citizenship;
-				candidateHistory.status = entity.status;
-				candidateHistory.resumeUrl = entity.resumeUrl;
+				candidateHistory.firstName = entity.firstName ?? "";
+				candidateHistory.lastName = entity.lastName ?? "";
+				candidateHistory.email = entity.email ?? "";
+				candidateHistory.phone = entity.phone ?? "";
+				candidateHistory.currentLocation = entity.currentLocation ?? "";
+				candidateHistory.citizenship = entity.citizenship ?? "";
+				candidateHistory.status = entity.status ?? CandidateStatus.OPEN;
+				candidateHistory.resumeUrl = entity.resumeUrl ?? "";
 				candidateHistory.createdBy = userId;
 				await manager.save(candidateHistory);
-
 				console.log(`History record created for CandidateEntity: ${entity.id}`);
 				break;
 
@@ -45,10 +47,11 @@ export class HistoryService {
 				const skillHistory = new CandidateSkillHistoryEntity();
 				skillHistory.candidateSkillId = entity.id;
 				skillHistory.action = action;
-				skillHistory.university = entity.university;
-				skillHistory.qualification = entity.qualification;
-				skillHistory.yearsOfExperience = entity.yearsOfExperience;
-				skillHistory.proficiencyLevel = entity.proficiencyLevel;
+				skillHistory.university = entity.university ?? "";
+				skillHistory.qualification = entity.qualification ?? "";
+				skillHistory.yearsOfExperience = entity.yearsOfExperience ?? 0;
+				skillHistory.proficiencyLevel = entity.proficiencyLevel ?? 0;
+				skillHistory.possessedSkills = entity.possessedSkills ?? "";
 				skillHistory.createdBy = userId;
 				await manager.save(skillHistory);
 				console.log(
@@ -60,11 +63,11 @@ export class HistoryService {
 				const jobHistory = new JobApplicationHistoryEntity();
 				jobHistory.jobApplicationId = entity.id;
 				jobHistory.action = action;
-				jobHistory.appliedJob = entity.appliedJob;
-				jobHistory.applicationStatus = entity.applicationStatus;
-				jobHistory.department = entity.department;
-				jobHistory.requirements = entity.requirements;
-				jobHistory.isActive = entity.isActive;
+				jobHistory.appliedJob = entity.appliedJob ?? AppliedJob.OTHER;
+				jobHistory.applicationStatus =
+					entity.applicationStatus ?? AppliedJobStatus.ACTIVE;
+				jobHistory.appliedJobOther = entity.appliedJobOther ?? "";
+				jobHistory.isActive = entity.isActive ?? true;
 				jobHistory.createdBy = userId;
 				await manager.save(jobHistory);
 				console.log(
@@ -76,11 +79,10 @@ export class HistoryService {
 				const stageHistory = new InterviewStageHistoryEntity();
 				stageHistory.stageId = entity.id;
 				stageHistory.action = action;
-				stageHistory.name = entity.name;
-				stageHistory.feedback = entity.feedback;
-				stageHistory.interviewerName = entity.interviewerName;
-				stageHistory.rating = entity.rating;
-				stageHistory.nextStepNotes = entity.nextStepNotes;
+				stageHistory.name = entity.name ?? "";
+				stageHistory.feedback = entity.feedback ?? "";
+				stageHistory.rating = entity.rating ?? 0;
+				stageHistory.nextStepNotes = entity.nextStepNotes ?? "";
 				stageHistory.createdBy = userId;
 				await manager.save(stageHistory);
 				console.log(

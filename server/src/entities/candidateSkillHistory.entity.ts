@@ -40,8 +40,12 @@ export class CandidateSkillHistoryEntity {
 	yearsOfExperience: number;
 
 	@Field()
-	@Column()
-	proficiencyLevel: number;
+	@Column({ nullable: true })
+	proficiencyLevel?: number;
+
+	@Field()
+	@Column({ nullable: true })
+	possessedSkills?: string;
 
 	@Field(() => CandidateSkillEntity)
 	@ManyToOne(

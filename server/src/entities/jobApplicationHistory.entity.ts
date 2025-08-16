@@ -49,21 +49,18 @@ export class JobApplicationHistoryEntity {
 		default: AppliedJobStatus.ACTIVE,
 	})
 	applicationStatus: AppliedJobStatus;
+
 	@Field()
 	@Column()
 	action: string;
 
 	@Field({ nullable: true })
-	@Column({ nullable: true })
-	department?: string;
+	@Column({ type: "text", nullable: true })
+	appliedJobOther?: string;
 
 	@Field({ nullable: true })
 	@Column({ type: "text", nullable: true })
-	description?: string;
-
-	@Field({ nullable: true })
-	@Column({ type: "text", nullable: true })
-	requirements?: string;
+	requirementsMet?: boolean;
 
 	@Field()
 	@Column({ default: true })

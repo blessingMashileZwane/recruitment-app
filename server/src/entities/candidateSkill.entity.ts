@@ -6,15 +6,14 @@ import {
 	CreateDateColumn,
 	Entity,
 	JoinColumn,
-	ManyToOne,
 	OneToMany,
 	OneToOne,
 	PrimaryGeneratedColumn,
 	UpdateDateColumn,
 } from "typeorm";
+import { userContext } from "../middleware";
 import { CandidateEntity } from "./candidate.entity";
 import { CandidateSkillHistoryEntity } from "./candidateSkillHistory.entity";
-import { userContext } from "../middleware";
 
 @ObjectType()
 @Entity("candidate_skills")
@@ -40,8 +39,12 @@ export class CandidateSkillEntity {
 	yearsOfExperience: number;
 
 	@Field()
-	@Column()
-	proficiencyLevel: number;
+	@Column({ nullable: true })
+	proficiencyLevel?: number;
+
+	@Field({ nullable: true })
+	@Column({ nullable: true })
+	possessedSkills?: string;
 
 	@Field(() => CandidateEntity)
 	@OneToOne(() => CandidateEntity, (candidate) => candidate.candidateSkill)

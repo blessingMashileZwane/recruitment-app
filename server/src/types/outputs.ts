@@ -1,10 +1,13 @@
 import { Field, ID, ObjectType } from "type-graphql";
-import { CandidateStatus, AppliedJob } from "./index";
+import { CandidateStatus, AppliedJob, AppliedJobStatus } from "./index";
 
 @ObjectType()
 export class CandidateSkillOutput {
 	@Field(() => ID)
 	id: string;
+
+	@Field()
+	candidateId: string;
 
 	@Field()
 	university: string;
@@ -13,7 +16,13 @@ export class CandidateSkillOutput {
 	qualification: string;
 
 	@Field()
-	proficiencyLevel: number;
+	yearsOfExperience: number;
+
+	@Field({ nullable: true })
+	proficiencyLevel?: number;
+
+	@Field({ nullable: true })
+	possessedSkills?: string;
 
 	@Field()
 	createdAt: Date;
@@ -36,23 +45,17 @@ export class InterviewStageOutput {
 	@Field()
 	name: string;
 
-	@Field({ nullable: true })
-	description?: string;
-
 	@Field()
 	feedback: string;
-
-	@Field()
-	interviewerName: string;
 
 	@Field()
 	rating: number;
 
 	@Field()
-	comments: string;
+	nextStepNotes: string;
 
 	@Field()
-	nextStepNotes: string;
+	progressToNextStage: boolean;
 
 	@Field()
 	createdAt: Date;
@@ -72,20 +75,14 @@ export class JobApplicationOutput {
 	@Field(() => ID)
 	id: string;
 
-	@Field()
-	title: string;
-
 	@Field(() => AppliedJob)
-	status: AppliedJob;
+	appliedJob: AppliedJob;
+
+	@Field(() => AppliedJobStatus)
+	applicationStatus: AppliedJobStatus;
 
 	@Field({ nullable: true })
-	department?: string;
-
-	@Field({ nullable: true })
-	description?: string;
-
-	@Field({ nullable: true })
-	requirements?: string;
+	appliedJobOther?: string;
 
 	@Field()
 	isActive: boolean;
@@ -138,8 +135,8 @@ export class CandidateOutput {
 	@Field(() => CandidateSkillOutput)
 	candidateSkill: CandidateSkillOutput;
 
-	@Field(() => JobApplicationOutput)
-	jobApplication: JobApplicationOutput;
+	@Field(() => [JobApplicationOutput])
+	jobApplications: JobApplicationOutput[];
 
 	@Field()
 	createdAt: Date;
@@ -182,6 +179,12 @@ export class CandidateBasicOutput {
 
 	@Field({ nullable: true })
 	resumeUrl?: string;
+
+	@Field(() => AppliedJob, { nullable: true })
+	appliedJob?: AppliedJob;
+
+	@Field(() => AppliedJobStatus, { nullable: true })
+	applicationStatus?: AppliedJobStatus;
 
 	@Field()
 	createdAt: Date;

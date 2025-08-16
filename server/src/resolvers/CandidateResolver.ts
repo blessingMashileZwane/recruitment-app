@@ -1,12 +1,18 @@
-import { Query, Arg, ID, Mutation, Resolver, Int } from "type-graphql";
+import { Arg, ID, Int, Mutation, Query, Resolver } from "type-graphql";
 import { DataSource } from "typeorm";
 import { CandidateEntity } from "../entities";
 import { CandidateStatus } from "../types";
-import { CandidateListResponse } from "../types/outputs";
+import { CandidateListResponse, CandidateOutput } from "../types/outputs";
+import { CandidateSortField, SortOrder } from "../types/sort";
+import { HistoryService } from "../utils/history.service";
+import { runTransaction } from "../utils";
 
 @Resolver(() => CandidateEntity)
 export class CandidateResolver {
-	constructor(private dataSource: DataSource) {}
+	private historyService: HistoryService;
+	constructor(private dataSource: DataSource) {
+		this.historyService = new HistoryService(this.dataSource);
+	}
 
 	private candidateRepository() {
 		return this.dataSource.getRepository(CandidateEntity);
@@ -18,49 +24,64 @@ export class CandidateResolver {
 		@Arg("limit", () => Int, { defaultValue: 10 }) limit: number,
 		@Arg("status", () => String, { nullable: true }) status?: string,
 		@Arg("search", () => String, { nullable: true }) search?: string,
-		@Arg("position", () => String, { nullable: true }) position?: string,
-		@Arg("sortBy", () => String, { nullable: true }) sortBy?: string,
-		@Arg("sortOrder", () => String, { nullable: true }) sortOrder?: string
+		@Arg("sortBy", () => CandidateSortField, { nullable: true })
+		sortBy?: CandidateSortField,
+		@Arg("sortOrder", () => SortOrder, { nullable: true }) sortOrder?: SortOrder
 	): Promise<CandidateListResponse> {
 		const skip = (page - 1) * limit;
 
-		let query = this.candidateRepository().createQueryBuilder("candidate");
+		const query = this.candidateRepository()
+			.createQueryBuilder("candidate")
+			.leftJoinAndSelect("candidate.jobApplications", "jobApplication");
 
-		// Filters
-		if (status)
-			query = query.andWhere("candidate.status = :status", { status });
-		if (position)
-			query = query.andWhere("candidate.position = :position", { position });
+		if (status) {
+			query.andWhere("candidate.status = :status", { status });
+		}
+
 		if (search) {
-			query = query.andWhere(
-				"(candidate.firstName ILIKE :search OR candidate.lastName ILIKE :search OR candidate.email ILIKE :search)",
+			query.andWhere(
+				"(candidate.firstName ILIKE :search OR candidate.lastName ILIKE :search OR candidate.email ILIKE :search OR candidate.phone ILIKE :search)",
 				{ search: `%${search}%` }
 			);
 		}
 
-		// Sort mapping based on entity fields
-		const fieldMap: Record<string, string> = {
-			name: "candidate.firstName",
-			position: "candidate.position",
-			experience: "candidate.experience",
-			addedDate: "candidate.createdAt",
+		const fieldMap: Record<CandidateSortField, string> = {
+			firstName: "candidate.firstName",
+			lastName: "candidate.lastName",
+			status: "candidate.status",
+			appliedJob: "jobApplication.appliedJob",
+			applicationStatus: "jobApplication.applicationStatus",
+			createdAt: "candidate.createdAt",
 		};
 
 		if (sortBy && sortOrder && fieldMap[sortBy]) {
-			query = query.orderBy(
+			query.orderBy(
 				fieldMap[sortBy],
 				sortOrder.toUpperCase() as "ASC" | "DESC"
 			);
 		} else {
-			query = query.orderBy("candidate.createdAt", "DESC");
+			query.orderBy("candidate.createdAt", "DESC");
 		}
 
-		const [items, total] = await Promise.all([
-			query.skip(skip).take(limit).getMany(),
+		query.skip(skip).take(limit);
+
+		const [candidates, total] = await Promise.all([
+			query.getMany(),
 			query.getCount(),
 		]);
-
 		const totalPages = Math.ceil(total / limit);
+
+		const items = candidates.map((candidate) => {
+			const latestJobApp = candidate.jobApplications?.sort(
+				(a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+			)[0];
+
+			return {
+				...candidate,
+				appliedJob: latestJobApp?.appliedJob ?? null,
+				applicationStatus: latestJobApp?.applicationStatus ?? null,
+			};
+		});
 
 		return {
 			items,
@@ -71,10 +92,10 @@ export class CandidateResolver {
 		};
 	}
 
-	@Query(() => CandidateEntity, { nullable: true })
+	@Query(() => CandidateOutput, { nullable: true })
 	async candidate(
 		@Arg("id", () => ID) id: string
-	): Promise<CandidateEntity | null> {
+	): Promise<CandidateOutput | null> {
 		return this.candidateRepository().findOne({
 			where: { id },
 			relations: [
@@ -89,7 +110,7 @@ export class CandidateResolver {
 		});
 	}
 
-	@Mutation(() => CandidateEntity)
+	@Mutation(() => CandidateOutput)
 	async createCandidate(
 		@Arg("firstName") firstName: string,
 		@Arg("lastName") lastName: string,
@@ -109,12 +130,22 @@ export class CandidateResolver {
 			phone,
 			currentLocation,
 			citizenship,
-			status: status || CandidateStatus.OPEN,
+			status,
 		});
-		return this.candidateRepository().save(candidate);
+
+		return runTransaction(this.dataSource, async (manager) => {
+			const response = await manager.save(candidate);
+			await this.historyService.createHistoryRecord(
+				candidate,
+				"CandidateEntity",
+				"CREATE",
+				manager
+			);
+			return response;
+		});
 	}
 
-	@Mutation(() => CandidateEntity)
+	@Mutation(() => CandidateOutput)
 	async updateCandidate(
 		@Arg("id", () => ID) id: string,
 		@Arg("firstName", { nullable: true }) firstName?: string,
@@ -125,7 +156,7 @@ export class CandidateResolver {
 		@Arg("citizenship", { nullable: true }) citizenship?: string,
 		@Arg("status", () => CandidateStatus, { nullable: true })
 		status?: CandidateStatus
-	): Promise<CandidateEntity> {
+	): Promise<CandidateOutput> {
 		const repository = this.candidateRepository();
 		const candidate = await repository.findOneOrFail({ where: { id } });
 
@@ -137,31 +168,29 @@ export class CandidateResolver {
 		if (citizenship) candidate.citizenship = citizenship;
 		if (status) candidate.status = status;
 
-		return repository.save(candidate);
+		return runTransaction(this.dataSource, async (manager) => {
+			const response = await manager.save(candidate);
+			await this.historyService.createHistoryRecord(
+				candidate,
+				"CandidateEntity",
+				"CREATE",
+				manager
+			);
+			return response;
+		});
 	}
 
 	@Mutation(() => Boolean)
 	async deleteCandidate(@Arg("id", () => ID) id: string): Promise<boolean> {
-		await this.candidateRepository().delete(id);
-		return true;
-	}
-
-	// Keep fullCandidate for detailed view
-	@Query(() => CandidateEntity, { nullable: true })
-	async fullCandidate(
-		@Arg("id", () => ID) id: string
-	): Promise<CandidateEntity | null> {
-		return this.candidateRepository().findOne({
-			where: { id },
-			relations: [
-				"candidateSkill",
-				"candidateSkill.history",
-				"jobApplications",
-				"jobApplications.history",
-				"jobApplications.interviewStages",
-				"jobApplications.interviewStages.history",
-				"history",
-			],
+		return runTransaction(this.dataSource, async (manager) => {
+			await manager.delete(CandidateEntity, id);
+			await this.historyService.createHistoryRecord(
+				{ id },
+				"CandidateEntity",
+				"DELETE",
+				manager
+			);
+			return true;
 		});
 	}
 }

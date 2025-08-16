@@ -1,100 +1,166 @@
+import { HistoryService } from "./../utils/history.service";
 import { Resolver, Query, Mutation, Arg, ID } from "type-graphql";
-import { JobApplicationEntity } from "../entities";
+import { CandidateEntity, JobApplicationEntity } from "../entities";
 import { DataSource } from "typeorm";
+import { AppliedJob, AppliedJobStatus } from "../types";
+import { JobApplicationOutput } from "../types/outputs";
+import { runTransaction } from "../utils";
 
 @Resolver(() => JobApplicationEntity)
 export class JobApplicationResolver {
-	constructor(private dataSource: DataSource) {}
-
-	@Query(() => [JobApplicationEntity])
-	async jobApplications(): Promise<JobApplicationEntity[]> {
-		const repository = this.dataSource.getRepository(JobApplicationEntity);
-		return repository.find();
+	private historyService: HistoryService;
+	constructor(private dataSource: DataSource) {
+		this.historyService = new HistoryService(this.dataSource);
 	}
 
-	@Query(() => JobApplicationEntity, { nullable: true })
+	@Query(() => [JobApplicationOutput])
+	async jobApplications(): Promise<JobApplicationOutput[]> {
+		const repository = this.dataSource.getRepository(JobApplicationEntity);
+		return repository.find({
+			relations: ["candidate", "interviewStages", "history"],
+		});
+	}
+
+	@Query(() => JobApplicationOutput, { nullable: true })
 	async jobApplication(
 		@Arg("id", () => ID) id: string
-	): Promise<JobApplicationEntity | null> {
+	): Promise<JobApplicationOutput | null> {
 		const repository = this.dataSource.getRepository(JobApplicationEntity);
-		return repository.findOne({ where: { id } });
+		return repository.findOne({
+			where: { id },
+			relations: ["candidate", "interviewStages", "history"],
+		});
 	}
 
-	@Query(() => JobApplicationEntity, { nullable: true })
+	@Query(() => JobApplicationOutput, { nullable: true })
 	async jobApplicationByCandidateId(
 		@Arg("candidateId", () => ID) candidateId: string
-	): Promise<JobApplicationEntity | null> {
+	): Promise<JobApplicationOutput | null> {
 		const repository = this.dataSource.getRepository(JobApplicationEntity);
 		return repository.findOne({
 			where: { candidate: { id: candidateId } },
-			relations: ["candidate"],
+			relations: ["candidate", "interviewStages", "history"],
 		});
 	}
 
-	@Mutation(() => JobApplicationEntity)
+	@Mutation(() => JobApplicationOutput)
 	async createJobApplication(
-		@Arg("title") title: string,
-		@Arg("description", { nullable: true }) description?: string,
-		@Arg("requirements", { nullable: true }) requirements?: string,
+		@Arg("candidateId", () => ID) candidateId: string,
+		@Arg("appliedJob", () => AppliedJob) appliedJob: AppliedJob,
+		@Arg("applicationStatus", () => AppliedJobStatus, { nullable: true })
+		applicationStatus: AppliedJobStatus = AppliedJobStatus.ACTIVE,
+		@Arg("appliedJobOther", { nullable: true }) appliedJobOther?: string,
 		@Arg("isActive", { nullable: true }) isActive: boolean = true
-	): Promise<JobApplicationEntity> {
+	): Promise<JobApplicationOutput> {
 		const repository = this.dataSource.getRepository(JobApplicationEntity);
+		const candidateRepo = this.dataSource.getRepository(CandidateEntity);
+		const candidate = await candidateRepo.findOneOrFail({
+			where: { id: candidateId },
+		});
+
 		const application = repository.create({
-			title,
-			description,
-			requirements,
+			candidate,
+			appliedJob,
+			applicationStatus,
+			appliedJobOther,
 			isActive,
 		});
-		return repository.save(application);
+
+		return runTransaction(this.dataSource, async (manager) => {
+			const response = await manager.save(application);
+			await this.historyService.createHistoryRecord(
+				application,
+				"JobApplicationEntity",
+				"CREATE",
+				manager
+			);
+			return response;
+		});
 	}
 
-	@Mutation(() => JobApplicationEntity)
+	@Mutation(() => JobApplicationOutput)
 	async updateJobApplication(
 		@Arg("id", () => ID) id: string,
-		@Arg("title", { nullable: true }) title?: string,
-		@Arg("description", { nullable: true }) description?: string,
-		@Arg("requirements", { nullable: true }) requirements?: string,
+		@Arg("appliedJob", () => AppliedJob, { nullable: true })
+		appliedJob?: AppliedJob,
+		@Arg("applicationStatus", () => AppliedJobStatus, { nullable: true })
+		applicationStatus?: AppliedJobStatus,
+		@Arg("appliedJobOther", { nullable: true }) appliedJobOther?: string,
 		@Arg("isActive", { nullable: true }) isActive?: boolean
-	): Promise<JobApplicationEntity> {
+	): Promise<JobApplicationOutput> {
 		const repository = this.dataSource.getRepository(JobApplicationEntity);
-		const application = await repository.findOneOrFail({ where: { id } });
+		const application = await repository.findOneOrFail({
+			where: { id },
+			relations: ["candidate"],
+		});
 
-		if (title) application.title = title;
-		if (description !== undefined) application.description = description;
-		if (requirements !== undefined) application.requirements = requirements;
+		if (appliedJob !== undefined) application.appliedJob = appliedJob;
+		if (applicationStatus !== undefined)
+			application.applicationStatus = applicationStatus;
+		if (appliedJobOther !== undefined)
+			application.appliedJobOther = appliedJobOther;
 		if (isActive !== undefined) application.isActive = isActive;
 
-		return repository.save(application);
+		return runTransaction(this.dataSource, async (manager) => {
+			const response = await manager.save(application);
+			await this.historyService.createHistoryRecord(
+				application,
+				"JobApplicationEntity",
+				"CREATE",
+				manager
+			);
+			return response;
+		});
 	}
 
-	@Mutation(() => JobApplicationEntity)
+	@Mutation(() => JobApplicationOutput)
 	async updateJobApplicationByCandidateId(
 		@Arg("candidateId", () => ID) candidateId: string,
-		@Arg("title", { nullable: true }) title?: string,
-		@Arg("description", { nullable: true }) description?: string,
-		@Arg("requirements", { nullable: true }) requirements?: string,
+		@Arg("appliedJob", () => AppliedJob, { nullable: true })
+		appliedJob?: AppliedJob,
+		@Arg("applicationStatus", () => AppliedJobStatus, { nullable: true })
+		applicationStatus?: AppliedJobStatus,
+		@Arg("appliedJobOther", { nullable: true }) appliedJobOther?: string,
 		@Arg("isActive", { nullable: true }) isActive?: boolean
-	): Promise<JobApplicationEntity> {
+	): Promise<JobApplicationOutput> {
 		const repository = this.dataSource.getRepository(JobApplicationEntity);
 		const application = await repository.findOneOrFail({
 			where: { candidate: { id: candidateId } },
 			relations: ["candidate"],
 		});
 
-		if (title) application.title = title;
-		if (description !== undefined) application.description = description;
-		if (requirements !== undefined) application.requirements = requirements;
+		if (appliedJob !== undefined) application.appliedJob = appliedJob;
+		if (applicationStatus !== undefined)
+			application.applicationStatus = applicationStatus;
+		if (appliedJobOther !== undefined)
+			application.appliedJobOther = appliedJobOther;
 		if (isActive !== undefined) application.isActive = isActive;
 
-		return repository.save(application);
+		return runTransaction(this.dataSource, async (manager) => {
+			const response = await manager.save(application);
+			await this.historyService.createHistoryRecord(
+				application,
+				"JobApplicationEntity",
+				"UPDATE",
+				manager
+			);
+			return response;
+		});
 	}
 
 	@Mutation(() => Boolean)
 	async deleteJobApplication(
 		@Arg("id", () => ID) id: string
 	): Promise<boolean> {
-		const repository = this.dataSource.getRepository(JobApplicationEntity);
-		await repository.delete(id);
-		return true;
+		return runTransaction(this.dataSource, async (manager) => {
+			await manager.delete(JobApplicationEntity, id);
+			await this.historyService.createHistoryRecord(
+				{ id },
+				"JobApplicationEntity",
+				"DELETE",
+				manager
+			);
+			return true;
+		});
 	}
 }

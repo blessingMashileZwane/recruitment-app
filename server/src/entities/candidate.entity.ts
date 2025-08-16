@@ -61,6 +61,10 @@ export class CandidateEntity {
 	})
 	status: CandidateStatus;
 
+	@Field({ nullable: true })
+	@Column({ nullable: true })
+	resumeUrl?: string;
+
 	@Field(() => [JobApplicationEntity])
 	@OneToMany(() => JobApplicationEntity, (application) => application.candidate)
 	jobApplications: JobApplicationEntity[];
@@ -69,10 +73,6 @@ export class CandidateEntity {
 	@OneToOne(() => CandidateSkillEntity)
 	@JoinColumn()
 	candidateSkill: CandidateSkillEntity;
-
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	resumeUrl?: string;
 
 	@OneToMany(() => CandidateHistoryEntity, (history) => history.candidate)
 	history: CandidateHistoryEntity[];

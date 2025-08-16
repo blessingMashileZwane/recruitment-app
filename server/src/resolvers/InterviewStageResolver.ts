@@ -1,106 +1,124 @@
+import { HistoryService } from "./../utils/history.service";
 import { Resolver, Query, Mutation, Arg, ID } from "type-graphql";
-import { InterviewStageEntity } from "../entities";
+import { InterviewStageEntity, JobApplicationEntity } from "../entities";
 import { DataSource } from "typeorm";
+import { InterviewStageOutput } from "../types/outputs";
+import { runTransaction } from "../utils";
 
 @Resolver(() => InterviewStageEntity)
 export class InterviewStageResolver {
-	constructor(private dataSource: DataSource) {}
-
-	@Query(() => [InterviewStageEntity])
-	async interviewStages(): Promise<InterviewStageEntity[]> {
-		const repository = this.dataSource.getRepository(InterviewStageEntity);
-		return repository.find();
+	private historyService: HistoryService;
+	constructor(private dataSource: DataSource) {
+		this.historyService = new HistoryService(this.dataSource);
 	}
 
-	@Query(() => InterviewStageEntity, { nullable: true })
+	@Query(() => [InterviewStageOutput])
+	async interviewStages(): Promise<InterviewStageOutput[]> {
+		const repository = this.dataSource.getRepository(InterviewStageEntity);
+		return repository.find({ relations: ["jobApplication", "history"] });
+	}
+
+	@Query(() => InterviewStageOutput, { nullable: true })
 	async interviewStage(
 		@Arg("id", () => ID) id: string
-	): Promise<InterviewStageEntity | null> {
+	): Promise<InterviewStageOutput | null> {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
-		return repository.findOne({ where: { id } });
+		return repository.findOne({
+			where: { id },
+			relations: ["jobApplication", "history"],
+		});
 	}
 
-	@Query(() => [InterviewStageEntity], { nullable: true })
+	@Query(() => [InterviewStageOutput], { nullable: true })
 	async interviewStagesByCandidateId(
 		@Arg("candidateId", () => ID) candidateId: string
-	): Promise<InterviewStageEntity[] | null> {
+	): Promise<InterviewStageOutput[] | null> {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
 		return repository.find({
 			where: { jobApplication: { candidate: { id: candidateId } } },
-			relations: ["jobApplication"],
+			relations: ["jobApplication", "history"],
 		});
 	}
 
-	@Mutation(() => InterviewStageEntity)
+	@Mutation(() => InterviewStageOutput)
 	async createInterviewStage(
+		@Arg("jobApplicationId", () => ID) jobApplicationId: string,
 		@Arg("name") name: string,
 		@Arg("feedback") feedback: string,
-		@Arg("interviewerName") interviewerName: string,
 		@Arg("rating") rating: number,
 		@Arg("nextStepNotes") nextStepNotes: string
-	): Promise<InterviewStageEntity> {
+	): Promise<InterviewStageOutput> {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
+		const jobApplicationRepo =
+			this.dataSource.getRepository(JobApplicationEntity);
+		const jobApplication = await jobApplicationRepo.findOneOrFail({
+			where: { id: jobApplicationId },
+		});
+
 		const stage = repository.create({
 			name,
 			feedback,
-			interviewerName,
 			rating,
 			nextStepNotes,
+			jobApplication,
 		});
-		return repository.save(stage);
+
+		return runTransaction(this.dataSource, async (manager) => {
+			const response = await manager.save(stage);
+			await this.historyService.createHistoryRecord(
+				stage,
+				"InterviewStageEntity",
+				"CREATE",
+				manager
+			);
+			return response;
+		});
 	}
 
-	@Mutation(() => InterviewStageEntity)
+	@Mutation(() => InterviewStageOutput)
 	async updateInterviewStage(
 		@Arg("id", () => ID) id: string,
 		@Arg("name", { nullable: true }) name?: string,
 		@Arg("feedback", { nullable: true }) feedback?: string,
-		@Arg("interviewerName", { nullable: true }) interviewerName?: string,
 		@Arg("rating", { nullable: true }) rating?: number,
 		@Arg("nextStepNotes", { nullable: true }) nextStepNotes?: string
-	): Promise<InterviewStageEntity> {
-		const repository = this.dataSource.getRepository(InterviewStageEntity);
-		const stage = await repository.findOneOrFail({ where: { id } });
-
-		if (name) stage.name = name;
-		if (feedback !== undefined) stage.feedback = feedback;
-		if (interviewerName !== undefined) stage.interviewerName = interviewerName;
-		if (rating !== undefined) stage.rating = rating;
-		if (nextStepNotes !== undefined) stage.nextStepNotes = nextStepNotes;
-
-		return repository.save(stage);
-	}
-
-	@Mutation(() => InterviewStageEntity)
-	async updateInterviewStageByCandidateId(
-		@Arg("candidateId", () => ID) candidateId: string,
-		@Arg("name", { nullable: true }) name?: string,
-		@Arg("feedback", { nullable: true }) feedback?: string,
-		@Arg("interviewerName", { nullable: true }) interviewerName?: string,
-		@Arg("rating", { nullable: true }) rating?: number,
-		@Arg("nextStepNotes", { nullable: true }) nextStepNotes?: string
-	): Promise<InterviewStageEntity> {
+	): Promise<InterviewStageOutput> {
 		const repository = this.dataSource.getRepository(InterviewStageEntity);
 		const stage = await repository.findOneOrFail({
-			where: { jobApplication: { candidate: { id: candidateId } } },
+			where: { id },
 			relations: ["jobApplication"],
 		});
 
-		if (name) stage.name = name;
+		if (name !== undefined) stage.name = name;
 		if (feedback !== undefined) stage.feedback = feedback;
-		if (interviewerName !== undefined) stage.interviewerName = interviewerName;
 		if (rating !== undefined) stage.rating = rating;
 		if (nextStepNotes !== undefined) stage.nextStepNotes = nextStepNotes;
 
-		return repository.save(stage);
+		return runTransaction(this.dataSource, async (manager) => {
+			const response = await manager.save(stage);
+			await this.historyService.createHistoryRecord(
+				stage,
+				"InterviewStageEntity",
+				"UPDATE",
+				manager
+			);
+			return response;
+		});
 	}
 
 	@Mutation(() => Boolean)
 	async deleteInterviewStage(
 		@Arg("id", () => ID) id: string
 	): Promise<boolean> {
-		const repository = this.dataSource.getRepository(InterviewStageEntity);
-		await repository.delete(id);
-		return true;
+		return runTransaction(this.dataSource, async (manager) => {
+			await manager.delete(InterviewStageEntity, id);
+			await this.historyService.createHistoryRecord(
+				{ id },
+				"InterviewStageEntity",
+				"DELETE",
+				manager
+			);
+			return true;
+		});
 	}
 }

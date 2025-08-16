@@ -8,18 +8,19 @@ import {
 import { CandidateStatus, AppliedJob, AppliedJobStatus } from "../types";
 import { CreateCandidateInput } from "../types/inputs";
 import { HistoryService } from "../utils/history.service";
+import { CandidateOutput } from "../types/outputs";
 
-@Resolver(() => CandidateEntity)
+@Resolver(() => CandidateOutput)
 export class FullCandidateResolver {
 	private historyService: HistoryService;
 	constructor(private dataSource: DataSource) {
 		this.historyService = new HistoryService(dataSource);
 	}
 
-	@Query(() => CandidateEntity, { nullable: true })
+	@Query(() => CandidateOutput, { nullable: true })
 	async fullCandidate(
 		@Arg("id", () => ID) id: string
-	): Promise<CandidateEntity | null> {
+	): Promise<CandidateOutput | null> {
 		const repository = this.dataSource.getRepository(CandidateEntity);
 		return repository.findOne({
 			where: { id },
@@ -35,37 +36,34 @@ export class FullCandidateResolver {
 		});
 	}
 
-	@Mutation(() => CandidateEntity)
+	@Mutation(() => CandidateOutput)
 	async createFullCandidate(
 		@Arg("fullCandidate") input: CreateCandidateInput
-	): Promise<CandidateEntity> {
+	): Promise<CandidateOutput> {
 		const queryRunner = this.dataSource.createQueryRunner();
 		await queryRunner.connect();
 		await queryRunner.startTransaction();
 
 		const existingCandidate = await queryRunner.manager.findOne(
 			CandidateEntity,
-			{
-				where: { email: input.email },
-			}
+			{ where: { email: input.email } }
 		);
 		if (existingCandidate) {
 			throw new Error("A candidate with this email already exists");
 		}
 
 		try {
-			// Candidate
 			const candidate = new CandidateEntity();
 			candidate.firstName = input.firstName;
 			candidate.lastName = input.lastName;
 			candidate.email = input.email;
 			candidate.phone = input.phone;
-			candidate.status = CandidateStatus.OPEN;
+			candidate.status = input.status ?? CandidateStatus.OPEN;
 			candidate.currentLocation = input.currentLocation;
 			candidate.citizenship = input.citizenship;
 			candidate.resumeUrl = input.resumeUrl;
 
-			await queryRunner.manager.save(candidate); // subscriber will set createdBy
+			await queryRunner.manager.save(candidate);
 
 			await this.historyService.createHistoryRecord(
 				candidate,
@@ -74,7 +72,6 @@ export class FullCandidateResolver {
 				queryRunner
 			);
 
-			// Candidate Skill
 			const skill = new CandidateSkillEntity();
 			skill.university = input.candidateSkill.university;
 			skill.qualification = input.candidateSkill.qualification;
@@ -82,7 +79,7 @@ export class FullCandidateResolver {
 			skill.yearsOfExperience = 0;
 			skill.candidateId = candidate.id;
 
-			await queryRunner.manager.save(skill); // subscriber runs
+			await queryRunner.manager.save(skill);
 
 			await this.historyService.createHistoryRecord(
 				skill,
@@ -91,35 +88,31 @@ export class FullCandidateResolver {
 				queryRunner
 			);
 
-			// Job Application
-			const jobApplication = new JobApplicationEntity();
-			jobApplication.title = input.jobApplication.title;
-			jobApplication.appliedJob = input.jobApplication.status;
-			jobApplication.applicationStatus = AppliedJobStatus.ACTIVE;
-			jobApplication.department = input.jobApplication.department;
-			jobApplication.requirements = input.jobApplication.requirements;
-			jobApplication.isActive = input.jobApplication.isActive;
-			jobApplication.candidate = candidate;
+			for (const jobInput of input.jobApplications) {
+				const jobApplication = new JobApplicationEntity();
+				jobApplication.appliedJob = jobInput.appliedJob;
+				jobApplication.applicationStatus = AppliedJobStatus.ACTIVE;
+				jobApplication.appliedJobOther = jobInput.appliedJobOther;
+				jobApplication.isActive = jobInput.isActive;
+				jobApplication.candidate = candidate;
 
-			await queryRunner.manager.save(jobApplication);
+				await queryRunner.manager.save(jobApplication);
 
-			await this.historyService.createHistoryRecord(
-				jobApplication,
-				"JobApplicationEntity",
-				"CREATE",
-				queryRunner
-			);
+				await this.historyService.createHistoryRecord(
+					jobApplication,
+					"JobApplicationEntity",
+					"CREATE",
+					queryRunner
+				);
+			}
 
-			// Link skill to candidate
 			candidate.candidateSkill = skill;
-			await queryRunner.manager.save(candidate); // triggers subscriber for updatedBy
+			await queryRunner.manager.save(candidate);
 
 			await queryRunner.commitTransaction();
 
 			const result = await this.fullCandidate(candidate.id);
-			if (!result) {
-				throw new Error("Failed to load created candidate");
-			}
+			if (!result) throw new Error("Failed to load created candidate");
 			return result;
 		} catch (error) {
 			await queryRunner.rollbackTransaction();

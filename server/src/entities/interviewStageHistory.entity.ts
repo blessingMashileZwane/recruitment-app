@@ -36,15 +36,15 @@ export class InterviewStageHistoryEntity {
 
 	@Field()
 	@Column()
-	interviewerName: string;
-
-	@Field()
-	@Column()
 	rating: number;
 
 	@Field()
 	@Column()
 	nextStepNotes: string;
+
+	@Field()
+	@Column()
+	progressToNextStage: boolean;
 
 	@Field(() => InterviewStageEntity)
 	@ManyToOne(() => InterviewStageEntity, (stage) => stage.history)

@@ -1,23 +1,28 @@
 import { Resolver, Query, Mutation, Arg, ID } from "type-graphql";
 import { CandidateSkillEntity } from "../entities";
 import { DataSource } from "typeorm";
+import { CandidateSkillOutput } from "../types/outputs";
+import { HistoryService, runTransaction } from "../utils";
 
 @Resolver(() => CandidateSkillEntity)
 export class CandidateSkillResolver {
-	constructor(private dataSource: DataSource) {}
+	private historyService: HistoryService;
+	constructor(private dataSource: DataSource) {
+		this.historyService = new HistoryService(this.dataSource);
+	}
 
-	@Query(() => [CandidateSkillEntity])
-	async candidateSkills(): Promise<CandidateSkillEntity[]> {
+	@Query(() => [CandidateSkillOutput])
+	async candidateSkills(): Promise<CandidateSkillOutput[]> {
 		const repository = this.dataSource.getRepository(CandidateSkillEntity);
 		return repository.find({
 			relations: ["candidate", "skill"],
 		});
 	}
 
-	@Query(() => [CandidateSkillEntity])
+	@Query(() => [CandidateSkillOutput])
 	async candidateSkillsByCandidate(
 		@Arg("candidateId", () => ID) candidateId: string
-	): Promise<CandidateSkillEntity[]> {
+	): Promise<CandidateSkillOutput[]> {
 		const repository = this.dataSource.getRepository(CandidateSkillEntity);
 		return repository.find({
 			where: { candidateId },
@@ -25,7 +30,7 @@ export class CandidateSkillResolver {
 		});
 	}
 
-	@Mutation(() => CandidateSkillEntity)
+	@Mutation(() => CandidateSkillOutput)
 	async createCandidateSkill(
 		@Arg("candidateId", () => ID) candidateId: string,
 		@Arg("university", () => ID) university: string,
@@ -33,7 +38,7 @@ export class CandidateSkillResolver {
 		@Arg("proficiencyLevel") proficiencyLevel: number,
 		@Arg("qualification", () => String, { nullable: true })
 		qualification?: string
-	): Promise<CandidateSkillEntity> {
+	): Promise<CandidateSkillOutput> {
 		const repository = this.dataSource.getRepository(CandidateSkillEntity);
 		const candidateSkill = repository.create({
 			candidateId,
@@ -42,15 +47,25 @@ export class CandidateSkillResolver {
 			proficiencyLevel,
 			qualification,
 		});
-		return repository.save(candidateSkill);
+
+		return runTransaction(this.dataSource, async (manager) => {
+			const response = await manager.save(candidateSkill);
+			await this.historyService.createHistoryRecord(
+				candidateSkill,
+				"CandidateSkillEntity",
+				"CREATE",
+				manager
+			);
+			return response;
+		});
 	}
 
-	@Mutation(() => CandidateSkillEntity)
+	@Mutation(() => CandidateSkillOutput)
 	async updateCandidateSkill(
 		@Arg("id", () => ID) id: string,
 		@Arg("yearsOfExperience", { nullable: true }) yearsOfExperience?: number,
 		@Arg("proficiencyLevel", { nullable: true }) proficiencyLevel?: number
-	): Promise<CandidateSkillEntity> {
+	): Promise<CandidateSkillOutput> {
 		const repository = this.dataSource.getRepository(CandidateSkillEntity);
 		const candidateSkill = await repository.findOneOrFail({ where: { id } });
 
@@ -59,15 +74,24 @@ export class CandidateSkillResolver {
 		if (proficiencyLevel !== undefined)
 			candidateSkill.proficiencyLevel = proficiencyLevel;
 
-		return repository.save(candidateSkill);
+		return runTransaction(this.dataSource, async (manager) => {
+			const response = await manager.save(candidateSkill);
+			await this.historyService.createHistoryRecord(
+				candidateSkill,
+				"CandidateSkillEntity",
+				"UPDATE",
+				manager
+			);
+			return response;
+		});
 	}
 
-	@Mutation(() => CandidateSkillEntity)
+	@Mutation(() => CandidateSkillOutput)
 	async updateCandidateSkillByCandidateId(
 		@Arg("candidateId", () => ID) candidateId: string,
 		@Arg("yearsOfExperience", { nullable: true }) yearsOfExperience?: number,
 		@Arg("proficiencyLevel", { nullable: true }) proficiencyLevel?: number
-	): Promise<CandidateSkillEntity> {
+	): Promise<CandidateSkillOutput> {
 		const repository = this.dataSource.getRepository(CandidateSkillEntity);
 		const candidateSkill = await repository.findOneOrFail({
 			where: { candidateId },
@@ -79,15 +103,31 @@ export class CandidateSkillResolver {
 		if (proficiencyLevel !== undefined)
 			candidateSkill.proficiencyLevel = proficiencyLevel;
 
-		return repository.save(candidateSkill);
+		return runTransaction(this.dataSource, async (manager) => {
+			const response = await manager.save(candidateSkill);
+			await this.historyService.createHistoryRecord(
+				candidateSkill,
+				"CandidateSkillEntity",
+				"UPDATE",
+				manager
+			);
+			return response;
+		});
 	}
 
 	@Mutation(() => Boolean)
 	async deleteCandidateSkill(
 		@Arg("id", () => ID) id: string
 	): Promise<boolean> {
-		const repository = this.dataSource.getRepository(CandidateSkillEntity);
-		await repository.delete(id);
-		return true;
+		return runTransaction(this.dataSource, async (manager) => {
+			await manager.delete(CandidateSkillEntity, id);
+			await this.historyService.createHistoryRecord(
+				{ id },
+				"CandidateSkillEntity",
+				"DELETE",
+				manager
+			);
+			return true;
+		});
 	}
 }

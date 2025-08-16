@@ -53,6 +53,10 @@ export class CandidateHistoryEntity {
 	@Column({ nullable: true })
 	citizenship?: string;
 
+	@Field({ nullable: true })
+	@Column({ nullable: true })
+	resumeUrl?: string;
+
 	@Field(() => CandidateStatus)
 	@Column({
 		type: "enum",
@@ -60,10 +64,6 @@ export class CandidateHistoryEntity {
 		default: CandidateStatus.OPEN,
 	})
 	status: CandidateStatus;
-
-	@Field({ nullable: true })
-	@Column({ nullable: true })
-	resumeUrl?: string;
 
 	@ManyToOne(() => CandidateEntity, (candidate) => candidate.history)
 	@JoinColumn({ name: "candidate_id" })

@@ -27,7 +27,6 @@ export interface JobApplicationOutput {
 	title: string;
 	appliedJob?: AppliedJob;
 	appliedStatus?: AppliedJobStatus;
-	department?: string;
 	requirements?: string;
 	isActive: boolean;
 	interviewStages: InterviewStageOutput[];

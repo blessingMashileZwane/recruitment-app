@@ -10,7 +10,13 @@ export class CreateCandidateSkillInput {
 	qualification: string;
 
 	@Field()
-	proficiencyLevel: number;
+	yearsOfExperience: number;
+
+	@Field({ nullable: true })
+	proficiencyLevel?: number;
+
+	@Field({ nullable: true })
+	possessedSkills?: string;
 }
 
 @InputType()
@@ -22,13 +28,13 @@ export class CreateInterviewStageInput {
 	feedback: string;
 
 	@Field()
-	interviewerName: string;
-
-	@Field()
 	rating: number;
 
 	@Field()
 	nextStepNotes: string;
+
+	@Field()
+	progressToNextStage: boolean;
 
 	@Field()
 	jobApplicationId: string;
@@ -36,22 +42,18 @@ export class CreateInterviewStageInput {
 
 @InputType()
 export class CreateJobApplicationInput {
-	@Field()
-	title: string;
-
 	@Field(() => AppliedJob)
-	status: AppliedJob;
+	appliedJob: AppliedJob;
+
+	@Field(() => AppliedJobStatus)
+	applicationStatus: AppliedJobStatus;
 
 	@Field({ nullable: true })
-	department?: string;
+	appliedJobOther?: string;
 
-	@Field({ nullable: true })
-	requirements?: string;
-
-	@Field()
+	@Field({ defaultValue: true })
 	isActive: boolean;
 }
-
 @InputType()
 export class CreateCandidateInput {
 	@Field()
@@ -81,8 +83,8 @@ export class CreateCandidateInput {
 	@Field(() => CreateCandidateSkillInput)
 	candidateSkill: CreateCandidateSkillInput;
 
-	@Field(() => CreateJobApplicationInput)
-	jobApplication: CreateJobApplicationInput;
+	@Field(() => [CreateJobApplicationInput])
+	jobApplications: CreateJobApplicationInput[];
 }
 
 @InputType()
@@ -97,7 +99,13 @@ export class UpdateCandidateSkillInput {
 	qualification?: string;
 
 	@Field({ nullable: true })
+	yearsOfExperience?: number;
+
+	@Field({ nullable: true })
 	proficiencyLevel?: number;
+
+	@Field({ nullable: true })
+	possessedSkills?: string;
 }
 
 @InputType()
@@ -112,22 +120,19 @@ export class UpdateInterviewStageInput {
 	feedback?: string;
 
 	@Field({ nullable: true })
-	interviewerName?: string;
-
-	@Field({ nullable: true })
 	rating?: number;
 
 	@Field({ nullable: true })
 	nextStepNotes?: string;
+
+	@Field({ nullable: true })
+	progressToNextStage?: boolean;
 }
 
 @InputType()
 export class UpdateJobApplicationInput {
 	@Field(() => ID)
 	id: string;
-
-	@Field({ nullable: true })
-	title?: string;
 
 	@Field(() => AppliedJob, { nullable: true })
 	appliedJob?: AppliedJob;
@@ -136,13 +141,7 @@ export class UpdateJobApplicationInput {
 	applicationStatus?: AppliedJobStatus;
 
 	@Field({ nullable: true })
-	department?: string;
-
-	@Field({ nullable: true })
-	description?: string;
-
-	@Field({ nullable: true })
-	requirements?: string;
+	appliedJobOther?: string;
 
 	@Field({ nullable: true })
 	isActive?: boolean;

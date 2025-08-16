@@ -34,10 +34,6 @@ export class JobApplicationEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id: string;
 
-	@Field()
-	@Column()
-	title: string;
-
 	@Field(() => AppliedJob)
 	@Column({
 		type: "enum",
@@ -55,16 +51,8 @@ export class JobApplicationEntity {
 	applicationStatus: AppliedJobStatus;
 
 	@Field({ nullable: true })
-	@Column({ nullable: true })
-	department?: string;
-
-	@Field({ nullable: true })
 	@Column({ type: "text", nullable: true })
-	description?: string;
-
-	@Field({ nullable: true })
-	@Column({ type: "text", nullable: true })
-	requirements?: string;
+	appliedJobOther?: string;
 
 	@Field()
 	@Column({ default: true })
