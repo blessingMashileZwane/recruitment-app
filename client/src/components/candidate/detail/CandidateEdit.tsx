@@ -1,233 +1,131 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { graphqlService } from "../../../services/graphql.service";
-import { CandidateStatus } from "../../../types/enums";
-import type { UpdateCandidateInput } from "../../../types/inputs";
+import type { CandidateFormData } from "../../../types/candidate";
 import type { CandidateOutput } from "../../../types/outputs";
+import { BasicInfoForm } from "../form/BasicInfoForm";
 
-type CandidateEditProps = {
+interface CandidateEditProps {
     candidateId: string;
     onCancel: (candidateId: string) => void;
-    onSave: (updatedCandidate: CandidateOutput) => void;
-};
+    onUpdated: (candidateId: string) => void;
+}
 
-const statuses = Object.values(CandidateStatus);
-
-export default function CandidateEdit({ candidateId, onCancel, onSave }: CandidateEditProps) {
-    const [candidate, setCandidate] = useState<CandidateOutput | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({
+export function CandidateEdit({ candidateId, onCancel, onUpdated }: CandidateEditProps) {
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [candidateForm, setCandidateForm] = useState<CandidateFormData>({
         firstName: "",
         lastName: "",
         email: "",
         phone: "",
         currentLocation: "",
         citizenship: "",
-        status: "SCREENING",
         resumeUrl: "",
-        candidateSkill: {
-            university: "",
-            qualification: "",
-            proficiencyLevel: 1
-        },
-        jobApplications: {
-            title: "",
-            appliedJob: "",
-            appliedStatus: "PENDING",
-            department: "",
-            isActive: true
-        }
     });
 
     useEffect(() => {
         const loadCandidate = async () => {
-            console.log(candidateId);
             setLoading(true);
             try {
-                const data = await graphqlService.getCandidateById(candidateId);
-                setCandidate(data);
-                setFormData({
-                    firstName: data.firstName,
-                    lastName: data.lastName,
-                    email: data.email,
-                    phone: data.phone || "",
-                    currentLocation: data.currentLocation || "",
-                    citizenship: data.citizenship || "",
-                    status: data.status,
-                    resumeUrl: data.resumeUrl || "",
-                    candidateSkill: {
-                        university: data.candidateSkill.university,
-                        qualification: data.candidateSkill.qualification,
-                        proficiencyLevel: data.candidateSkill.proficiencyLevel
-                    },
-                    jobApplications: {
-                        title: data.jobApplications.title,
-                        appliedJob: data.jobApplications.appliedJob || "",
-                        appliedStatus: data.jobApplications.appliedStatus || "",
-                        department: data.jobApplications.department || "",
-                        isActive: data.jobApplications.isActive
-                    }
+                const candidate: CandidateOutput = await graphqlService.getCandidateById(candidateId);
+                setCandidateForm({
+                    firstName: candidate.firstName,
+                    lastName: candidate.lastName,
+                    email: candidate.email,
+                    phone: candidate.phone || "",
+                    currentLocation: candidate.currentLocation || "",
+                    citizenship: candidate.citizenship || "",
+                    resumeUrl: candidate.resumeUrl || "",
                 });
-            } catch (err) {
-                console.error("Failed to load candidate", err);
+            } catch (error) {
+                toast.error("Failed to load candidate details.");
+                console.error("Error loading candidate:", error);
             } finally {
                 setLoading(false);
             }
         };
+
         loadCandidate();
     }, [candidateId]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: name === "experience" ? Number(value) : value,
-        }));
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!candidate) return;
 
-        const updatedCandidate: UpdateCandidateInput = {
-            id: candidateId,
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            phone: formData.phone,
-            currentLocation: formData.currentLocation,
-            citizenship: formData.citizenship,
-            status: formData.status as CandidateStatus,
-            resumeUrl: formData.resumeUrl
-        };
+        if (!candidateForm.firstName.trim() || !candidateForm.lastName.trim()) {
+            toast.error("First and last name are required.");
+            return;
+        }
+        if (!candidateForm.email.trim()) {
+            toast.error("Email is required.");
+            return;
+        }
 
+        setSubmitting(true);
         try {
-            const result = await graphqlService.updateCandidate(updatedCandidate);
-            onSave(result);
-        } catch (err) {
-            console.error("Failed to save candidate", err);
+            await graphqlService.updateCandidate({
+                id: candidateId,
+                firstName: candidateForm.firstName,
+                lastName: candidateForm.lastName,
+                email: candidateForm.email,
+                phone: candidateForm.phone || undefined,
+                currentLocation: candidateForm.currentLocation || undefined,
+                citizenship: candidateForm.citizenship || undefined,
+                resumeUrl: candidateForm.resumeUrl || undefined,
+            });
+            toast.success("Candidate updated successfully.");
+            onUpdated(candidateId);
+        } catch (error) {
+            toast.error("Failed to update candidate. Please try again.");
+            console.error("Update candidate error:", error);
+        } finally {
+            setSubmitting(false);
         }
     };
 
-    if (loading) return <p>Loading candidate...</p>;
-    if (!candidate) return <p>Candidate not found</p>;
+    if (loading) {
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 flex items-center space-x-3">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <span>Loading candidate details...</span>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="max-w-xl mx-auto bg-white p-6 rounded shadow">
-            <h2 className="text-xl font-semibold mb-4">Edit Candidate</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                    <label className="block">
-                        <span className="text-gray-700">First Name</span>
-                        <input
-                            name="firstName"
-                            type="text"
-                            value={formData.firstName}
-                            onChange={handleChange}
-                            required
-                            className="mt-1 block w-full border rounded p-2"
-                        />
-                    </label>
+        <div className="max-w-4xl mx-auto">
+            <div className="mb-6">
+                <button
+                    onClick={() => onCancel(candidateId)}
+                    className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-4"
+                >
+                    ← Back
+                </button>
+                <h2 className="text-2xl font-bold text-gray-900">
+                    Edit Candidate: {candidateForm.firstName} {candidateForm.lastName}
+                </h2>
+            </div>
 
-                    <label className="block">
-                        <span className="text-gray-700">Last Name</span>
-                        <input
-                            name="lastName"
-                            type="text"
-                            value={formData.lastName}
-                            onChange={handleChange}
-                            required
-                            className="mt-1 block w-full border rounded p-2"
-                        />
-                    </label>
-                </div>
+            <form onSubmit={handleSubmit}>
+                <BasicInfoForm candidateForm={candidateForm} setCandidateForm={setCandidateForm} />
 
-                <label className="block">
-                    <span className="text-gray-700">Email</span>
-                    <input
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full border rounded p-2"
-                    />
-                </label>
-
-                <label className="block">
-                    <span className="text-gray-700">Phone</span>
-                    <input
-                        name="phone"
-                        type="tel"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border rounded p-2"
-                    />
-                </label>
-
-                <label className="block">
-                    <span className="text-gray-700">Current Location</span>
-                    <input
-                        name="currentLocation"
-                        type="text"
-                        value={formData.currentLocation}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border rounded p-2"
-                    />
-                </label>
-
-                <label className="block">
-                    <span className="text-gray-700">Citizenship</span>
-                    <input
-                        name="citizenship"
-                        type="text"
-                        value={formData.citizenship}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border rounded p-2"
-                    />
-                </label>
-
-                <label className="block">
-                    <span className="text-gray-700">Status</span>
-                    <select
-                        name="status"
-                        value={formData.status}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full border rounded p-2"
-                    >
-                        {statuses.map((s) => (
-                            <option key={s} value={s}>
-                                {s}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-
-                <label className="block">
-                    <span className="text-gray-700">Resume URL</span>
-                    <input
-                        name="resumeUrl"
-                        type="url"
-                        value={formData.resumeUrl}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border rounded p-2"
-                        placeholder="https://..."
-                    />
-                </label>
-
-                <div className="flex justify-between">
+                <div className="flex justify-end space-x-4 pt-6 border-t">
                     <button
                         type="button"
                         onClick={() => onCancel(candidateId)}
-                        className="px-4 py-2 border rounded bg-gray-200 hover:bg-gray-300"
+                        disabled={submitting}
+                        className="py-2 px-6 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        disabled={submitting}
+                        className="py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Save
+                        {submitting ? "Saving..." : "Update Candidate"}
                     </button>
                 </div>
             </form>

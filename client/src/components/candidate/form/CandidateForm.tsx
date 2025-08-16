@@ -10,8 +10,8 @@ import { BasicInfoForm } from './BasicInfoForm';
 import { BulkUpload } from './BulkUpload';
 import { JobModal } from './JobModal';
 import { JobsSection } from './JobsSection';
-import { SkillModal } from './SkillModal';
-import { SkillsSection } from './SkillsSection';
+import { SkillModal } from '../skill/SkillModal';
+import { SkillsSection } from '../skill/SkillsSection';
 
 function CandidateForm() {
     const [loading, setLoading] = useState(false);

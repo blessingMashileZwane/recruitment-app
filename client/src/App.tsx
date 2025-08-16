@@ -1,16 +1,18 @@
 import { LogOut, User, Users } from 'lucide-react';
 import { useState } from 'react';
+import { Toaster } from 'sonner';
 import './App.css';
 import { useAuth } from './auth/AuthProvider';
 import CandidatesList from './components/candidate/CandidatesList';
 import CandidateDetails from './components/candidate/detail/CandidateDetails';
-import CandidateEdit from './components/candidate/detail/CandidateEdit';
+import { CandidateEdit } from './components/candidate/detail/CandidateEdit';
 import CandidateForm from './components/candidate/form/CandidateForm';
+import { JobApplicationEdit } from './components/candidate/jobApplication/JobApplicationEdit';
+import { SkillEdit } from './components/candidate/skill/SkillEdit';
+import FeedbackEdit from './components/feedback/FeedbackEdit';
 import FeedbackForm from './components/feedback/FeedbackForm';
 import FeedbackHistory from './components/feedback/FeedbackHistory';
 import Login from './components/Login';
-import FeedbackEdit from './components/feedback/FeedbackEdit';
-import { Toaster } from 'sonner';
 
 
 type ViewState =
@@ -31,6 +33,7 @@ function App() {
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
   const [selectedInterviewStageId, setSelectedInterviewStageId] = useState<string | null>(null);
   const [selectedJobApplicationId, setSelectedJobApplicationId] = useState<string | null>(null);
+  const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
 
   if (!isLoggedIn) {
     return <Login />;
@@ -106,10 +109,10 @@ function App() {
                   setCurrentView({ view: "candidates" });
                   return null;
                 }
-                return <CandidateEdit candidateId={selectedCandidateId} onCancel={(id) => {
+                return <CandidateEdit candidateId={selectedCandidateId} onCancel={(id: string) => {
                   setCurrentView({ view: 'candidate-details', candidateId: id })
-                }} onSave={(updatedCandidate) => {
-                  setCurrentView({ view: 'candidate-details', candidateId: updatedCandidate.id })
+                }} onUpdated={(candidateId: string) => {
+                  setCurrentView({ view: 'candidate-details', candidateId })
                 }} />
 
               case "candidate-details":
@@ -131,11 +134,11 @@ function App() {
                       setCurrentView({ view: "edit-candidate", candidateId: id });
                     }}
                     onEditJobApplication={(id) => {
-                      setSelectedCandidateId(id);
+                      setSelectedJobApplicationId(id);
                       setCurrentView({ view: "edit-job-application", candidateId: id });
                     }}
                     onEditSkill={(id) => {
-                      setSelectedCandidateId(id);
+                      setSelectedSkillId(id);
                       setCurrentView({ view: "edit-skill", candidateId: id });
                     }}
                   />
@@ -196,19 +199,28 @@ function App() {
                 return <FeedbackEdit jobId={selectedJobApplicationId} candidateId={selectedCandidateId} interviewStageId={selectedInterviewStageId} onCancel={() => setCurrentView({ view: 'feedback-history', candidateId: selectedCandidateId })} onSubmit={() => setCurrentView({ view: 'feedback-history', candidateId: selectedCandidateId })} />
 
               case "edit-skill":
-                if (!selectedCandidateId) {
+                if (!selectedCandidateId || !selectedSkillId) {
                   setCurrentView({ view: "candidates" });
                   return null;
                 }
-                return <SkillEdit skillId={selectedSkillId} candidateId={selectedCandidateId} onCancel={() => setCurrentView({ view: 'candidate-details', candidateId: selectedCandidateId })} onSave={() => setCurrentView({ view: 'candidate-details', candidateId: selectedCandidateId })} />
+                return <SkillEdit
+                  skillId={selectedSkillId}
+                  candidateId={selectedCandidateId}
+                  onCancel={() => setCurrentView({ view: 'candidate-details', candidateId: selectedCandidateId })}
+                  onSave={() => setCurrentView({ view: 'candidate-details', candidateId: selectedCandidateId })}
+                />
 
               case "edit-job-application":
-                if (!selectedCandidateId) {
+                if (!selectedCandidateId || !selectedJobApplicationId) {
                   setCurrentView({ view: "candidates" });
                   return null;
                 }
-                return <JobApplicationEdit jobApplicationId={selectedJobApplicationId} candidateId={selectedCandidateId} onCancel={() => setCurrentView({ view: 'candidate-details', candidateId: selectedCandidateId })} onSave={() => setCurrentView({ view: 'candidate-details', candidateId: selectedCandidateId })} />
-
+                return <JobApplicationEdit
+                  jobApplicationId={selectedJobApplicationId}
+                  candidateId={selectedCandidateId}
+                  onCancel={() => setCurrentView({ view: 'candidate-details', candidateId: selectedCandidateId })}
+                  onSave={() => setCurrentView({ view: 'candidate-details', candidateId: selectedCandidateId })}
+                />
               default:
                 return <CandidatesList onViewDetails={(id) => {
                   setSelectedCandidateId(id);

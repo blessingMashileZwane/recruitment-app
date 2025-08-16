@@ -298,12 +298,11 @@ export class GraphQLService {
 	}
 
 	async updateCandidate(
-		id: string,
 		candidate: UpdateCandidateInput
 	): Promise<CandidateOutput> {
 		const query = `
-    mutation UpdateCandidate($id: ID!, $candidate: UpdateCandidateInput!) {
-      updateCandidate(id: $id, candidate: $candidate) {
+    mutation UpdateCandidate($candidate: UpdateCandidateInput!) {
+      updateCandidate(candidate: $candidate) {
         id
         firstName
         lastName
@@ -323,9 +322,36 @@ export class GraphQLService {
 
 		const { updateCandidate } = await this.query<{
 			updateCandidate: CandidateOutput;
-		}>(query, { id, candidate });
+		}>(query, { candidate });
 
 		return updateCandidate;
+	}
+
+	async getCandidateSkillById(
+		id: string
+	): Promise<CandidateSkillOutput | null> {
+		const query = `
+    query GetCandidateSkillById($id: ID!) {
+      getCandidateSkillById(id: $id) {
+        id
+        university
+        qualification
+        proficiencyLevel
+        yearsOfExperience
+        possessedSkills
+        createdAt
+        updatedAt
+        createdBy
+        updatedBy
+      }
+    }
+  `;
+
+		const { getCandidateSkillById } = await this.query<{
+			getCandidateSkillById: CandidateSkillOutput | null;
+		}>(query, { id });
+
+		return getCandidateSkillById;
 	}
 
 	async getCandidateSkillByCandidateId(
@@ -406,11 +432,40 @@ export class GraphQLService {
     }
   `;
 
+		console.log("Updating skill:", { skill });
+
 		const { updateCandidateSkill } = await this.query<{
 			updateCandidateSkill: CandidateSkillOutput;
 		}>(query, { input: skill });
 
 		return updateCandidateSkill;
+	}
+
+	async getJobApplicationById(id: string): Promise<JobApplicationOutput> {
+		const query = `
+    query GetJobApplicationById($id: ID!) {
+      getJobApplicationById(id: $id) {
+        id
+        candidateId
+        appliedJob
+        applicationStatus
+        appliedJobOther
+        isActive
+        createdAt
+        updatedAt
+        createdBy
+        updatedBy
+      }
+    }
+  `;
+
+		const { getJobApplicationById } = await this.query<{
+			getJobApplicationById: JobApplicationOutput;
+		}>(query, { id });
+
+		console.log({ getJobApplicationById });
+
+		return getJobApplicationById;
 	}
 
 	async getJobApplicationsByCandidateId(
@@ -482,28 +537,13 @@ export class GraphQLService {
     mutation UpdateJobApplication($input: UpdateJobApplicationInput!) {
       updateJobApplication(input: $input) {
         id
-        title
         appliedJob
         applicationStatus
-        department
-        requirements
         isActive
         createdAt
         updatedAt
         createdBy
         updatedBy
-        interviewStages {
-          id
-          name
-          feedback
-          interviewerName
-          rating
-          nextStepNotes
-          createdAt
-          updatedAt
-          createdBy
-          updatedBy
-        }
       }
     }
   `;

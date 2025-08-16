@@ -3,6 +3,7 @@ import { CandidateSkillEntity } from "../entities";
 import { DataSource } from "typeorm";
 import { CandidateSkillOutput } from "../types/outputs";
 import { HistoryService, runTransaction } from "../utils";
+import { UpdateCandidateSkillInput } from "../types/inputs";
 
 @Resolver(() => CandidateSkillEntity)
 export class CandidateSkillResolver {
@@ -16,6 +17,16 @@ export class CandidateSkillResolver {
 		const repository = this.dataSource.getRepository(CandidateSkillEntity);
 		return repository.find({
 			relations: ["candidate", "skill"],
+		});
+	}
+
+	@Query(() => CandidateSkillOutput)
+	async getCandidateSkillById(
+		@Arg("id", () => ID) id: string
+	): Promise<CandidateSkillOutput | null> {
+		const repository = this.dataSource.getRepository(CandidateSkillEntity);
+		return repository.findOne({
+			where: { id },
 		});
 	}
 
@@ -61,17 +72,19 @@ export class CandidateSkillResolver {
 
 	@Mutation(() => CandidateSkillOutput)
 	async updateCandidateSkill(
-		@Arg("id", () => ID) id: string,
-		@Arg("yearsOfExperience", { nullable: true }) yearsOfExperience?: number,
-		@Arg("proficiencyLevel", { nullable: true }) proficiencyLevel?: number
+		@Arg("input") input: UpdateCandidateSkillInput
 	): Promise<CandidateSkillOutput> {
+		const { id, yearsOfExperience, proficiencyLevel } = input;
+
 		const repository = this.dataSource.getRepository(CandidateSkillEntity);
 		const candidateSkill = await repository.findOneOrFail({ where: { id } });
 
-		if (yearsOfExperience !== undefined)
+		if (yearsOfExperience !== undefined) {
 			candidateSkill.yearsOfExperience = yearsOfExperience;
-		if (proficiencyLevel !== undefined)
+		}
+		if (proficiencyLevel !== undefined) {
 			candidateSkill.proficiencyLevel = proficiencyLevel;
+		}
 
 		return runTransaction(this.dataSource, async (manager) => {
 			const response = await manager.save(candidateSkill);
@@ -84,7 +97,6 @@ export class CandidateSkillResolver {
 			return response;
 		});
 	}
-
 	@Mutation(() => CandidateSkillOutput)
 	async updateCandidateSkillByCandidateId(
 		@Arg("candidateId", () => ID) candidateId: string,

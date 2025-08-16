@@ -5,6 +5,7 @@ import { DataSource } from "typeorm";
 import { AppliedJob, AppliedJobStatus } from "../types";
 import { JobApplicationOutput } from "../types/outputs";
 import { runTransaction } from "../utils";
+import { UpdateJobApplicationInput } from "../types/inputs";
 
 @Resolver(() => JobApplicationEntity)
 export class JobApplicationResolver {
@@ -29,6 +30,16 @@ export class JobApplicationResolver {
 		return repository.findOne({
 			where: { id },
 			relations: ["candidate", "interviewStages", "history"],
+		});
+	}
+
+	@Query(() => JobApplicationOutput)
+	async getJobApplicationById(
+		@Arg("id", () => ID) id: string
+	): Promise<JobApplicationOutput | null> {
+		const repository = this.dataSource.getRepository(JobApplicationEntity);
+		return repository.findOne({
+			where: { id },
 		});
 	}
 
@@ -80,26 +91,22 @@ export class JobApplicationResolver {
 
 	@Mutation(() => JobApplicationOutput)
 	async updateJobApplication(
-		@Arg("id", () => ID) id: string,
-		@Arg("appliedJob", () => AppliedJob, { nullable: true })
-		appliedJob?: AppliedJob,
-		@Arg("applicationStatus", () => AppliedJobStatus, { nullable: true })
-		applicationStatus?: AppliedJobStatus,
-		@Arg("appliedJobOther", { nullable: true }) appliedJobOther?: string,
-		@Arg("isActive", { nullable: true }) isActive?: boolean
+		@Arg("input", () => UpdateJobApplicationInput)
+		input: UpdateJobApplicationInput
 	): Promise<JobApplicationOutput> {
 		const repository = this.dataSource.getRepository(JobApplicationEntity);
 		const application = await repository.findOneOrFail({
-			where: { id },
+			where: { id: input.id },
 			relations: ["candidate"],
 		});
 
-		if (appliedJob !== undefined) application.appliedJob = appliedJob;
-		if (applicationStatus !== undefined)
-			application.applicationStatus = applicationStatus;
-		if (appliedJobOther !== undefined)
-			application.appliedJobOther = appliedJobOther;
-		if (isActive !== undefined) application.isActive = isActive;
+		if (input.appliedJob !== undefined)
+			application.appliedJob = input.appliedJob;
+		if (input.applicationStatus !== undefined)
+			application.applicationStatus = input.applicationStatus;
+		if (input.appliedJobOther !== undefined)
+			application.appliedJobOther = input.appliedJobOther;
+		if (input.isActive !== undefined) application.isActive = input.isActive;
 
 		return runTransaction(this.dataSource, async (manager) => {
 			const response = await manager.save(application);
