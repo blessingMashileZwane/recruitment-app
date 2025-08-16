@@ -152,6 +152,24 @@ export class CandidateOutput {
 }
 
 @ObjectType()
+class FailedCandidate {
+	@Field()
+	email: string;
+
+	@Field()
+	reason: string;
+}
+
+@ObjectType()
+export class BulkCreateCandidatesOutput {
+	@Field(() => [CandidateOutput])
+	success: CandidateOutput[];
+
+	@Field(() => [FailedCandidate])
+	failed: FailedCandidate[];
+}
+
+@ObjectType()
 export class CandidateBasicOutput {
 	@Field(() => ID)
 	id: string;

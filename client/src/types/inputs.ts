@@ -1,4 +1,10 @@
-import { CandidateStatus, AppliedJob, AppliedJobStatus } from "./enums";
+import {
+	CandidateStatus,
+	AppliedJob,
+	AppliedJobStatus,
+	CandidateSortField,
+	SortOrder,
+} from "./enums";
 
 export interface CreateCandidateSkillInput {
 	university: string;
@@ -79,11 +85,12 @@ export interface CandidateFilterInput {
 	search?: string;
 	status?: CandidateStatus;
 	jobType?: AppliedJob;
+	jobStatus?: AppliedJobStatus;
 }
 
 export interface SortInput {
-	field: string;
-	direction: "ASC" | "DESC";
+	field: CandidateSortField;
+	direction: SortOrder;
 }
 
 export interface PaginationInput {

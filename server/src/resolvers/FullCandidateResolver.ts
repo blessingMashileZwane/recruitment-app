@@ -7,7 +7,7 @@ import {
 } from "../entities";
 import { AppliedJobStatus, CandidateStatus } from "../types";
 import { CreateCandidateInput } from "../types/inputs";
-import { CandidateOutput } from "../types/outputs";
+import { BulkCreateCandidatesOutput, CandidateOutput } from "../types/outputs";
 import { HistoryService } from "../utils/history.service";
 
 @Resolver(() => CandidateOutput)
@@ -122,13 +122,10 @@ export class FullCandidateResolver {
 		}
 	}
 
-	@Mutation(() => Object)
+	@Mutation(() => BulkCreateCandidatesOutput)
 	async addCandidatesBulk(
 		@Arg("input", () => [CreateCandidateInput]) input: CreateCandidateInput[]
-	): Promise<{
-		success: CandidateOutput[];
-		failed: { email: string; reason: string }[];
-	}> {
+	): Promise<BulkCreateCandidatesOutput> {
 		const queryRunner = this.dataSource.createQueryRunner();
 		await queryRunner.connect();
 		await queryRunner.startTransaction();

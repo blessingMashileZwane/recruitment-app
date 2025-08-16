@@ -1,9 +1,11 @@
 import type { User } from "../types";
 import type {
+	CandidateFilterInput,
 	CreateCandidateInput,
 	CreateCandidateSkillInput,
 	CreateInterviewStageInput,
 	CreateJobApplicationInput,
+	SortInput,
 	UpdateCandidateInput,
 	UpdateCandidateSkillInput,
 	UpdateInterviewStageInput,
@@ -85,11 +87,8 @@ export class GraphQLService {
 	async getCandidatesList(
 		page?: number,
 		limit?: number,
-		status?: string,
-		search?: string,
-		position?: string,
-		sortBy?: string,
-		sortOrder?: string
+		filter?: CandidateFilterInput,
+		sort?: SortInput
 	): Promise<CandidateListResponse> {
 		const query = `
     query GetCandidates(
@@ -97,16 +96,18 @@ export class GraphQLService {
       $limit: Int!
       $status: String
       $search: String
-      $position: String
-      $sortBy: String
-      $sortOrder: String
+      $jobStatus: String
+      $jobType: String
+      $sortBy: CandidateSortField
+      $sortOrder: SortOrder
     ) {
       candidates(
         page: $page
         limit: $limit
         status: $status
         search: $search
-        position: $position
+        jobStatus: $jobStatus
+        jobType: $jobType
         sortBy: $sortBy
         sortOrder: $sortOrder
       ) {
@@ -124,6 +125,8 @@ export class GraphQLService {
           updatedAt
           createdBy
           updatedBy
+          appliedJob
+          applicationStatus
         }
         total
         page
@@ -134,13 +137,14 @@ export class GraphQLService {
   `;
 
 		const variables = {
-			page: Number(page ?? 1),
-			limit: Number(limit ?? 10),
-			status: status ?? null,
-			search: search ?? null,
-			position: position ?? null,
-			sortBy: sortBy ?? null,
-			sortOrder: sortOrder ?? null,
+			page: page ?? 1,
+			limit: limit ?? 10,
+			status: filter?.status?.toLowerCase(),
+			search: filter?.search,
+			jobStatus: filter?.jobStatus?.toLowerCase(),
+			jobType: filter?.jobType?.toLowerCase(),
+			sortBy: sort?.field,
+			sortOrder: sort?.direction,
 		};
 
 		const { candidates } = await this.query<{

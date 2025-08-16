@@ -24,6 +24,8 @@ export class CandidateResolver {
 		@Arg("limit", () => Int, { defaultValue: 10 }) limit: number,
 		@Arg("status", () => String, { nullable: true }) status?: string,
 		@Arg("search", () => String, { nullable: true }) search?: string,
+		@Arg("jobStatus", () => String, { nullable: true }) jobStatus?: string,
+		@Arg("jobType", () => String, { nullable: true }) jobType?: string, // added
 		@Arg("sortBy", () => CandidateSortField, { nullable: true })
 		sortBy?: CandidateSortField,
 		@Arg("sortOrder", () => SortOrder, { nullable: true }) sortOrder?: SortOrder
@@ -45,12 +47,19 @@ export class CandidateResolver {
 			);
 		}
 
+		if (jobStatus) {
+			query.andWhere("jobApplication.applicationStatus = :jobStatus", {
+				jobStatus,
+			});
+		}
+
+		if (jobType) {
+			query.andWhere("jobApplication.appliedJob = :jobType", { jobType });
+		}
+
 		const fieldMap: Record<CandidateSortField, string> = {
 			firstName: "candidate.firstName",
 			lastName: "candidate.lastName",
-			status: "candidate.status",
-			appliedJob: "jobApplication.appliedJob",
-			applicationStatus: "jobApplication.applicationStatus",
 			createdAt: "candidate.createdAt",
 		};
 

@@ -1,13 +1,13 @@
 export const CandidateStatus = {
-	OPEN: "OPEN",
-	CLOSED: "CLOSED",
+	OPEN: "open",
+	CLOSED: "closed",
 } as const;
 
 export const AppliedJobStatus = {
-	ACTIVE: "ACTIVE",
-	HIRED: "HIRED",
-	REJECTED: "REJECTED",
-	WITHDRAWN: "WITHDRAWN",
+	ACTIVE: "active",
+	HIRED: "hired",
+	REJECTED: "rejected",
+	WITHDRAWN: "withdrawn",
 } as const;
 
 export type AppliedJobStatus =
@@ -26,5 +26,21 @@ export const AppliedJob = {
 	TECH: "tech",
 	OTHER: "other",
 } as const;
+
+export const CandidateSortField = {
+	FIRST_NAME: "FIRST_NAME",
+	LAST_NAME: "LAST_NAME",
+	CREATED_AT: "CREATED_AT",
+} as const;
+
+export const SortOrder = {
+	ASC: "ASC",
+	DESC: "DESC",
+} as const;
+
+export type CandidateSortField =
+	(typeof CandidateSortField)[keyof typeof CandidateSortField];
+
+export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
 
 export type AppliedJob = (typeof AppliedJob)[keyof typeof AppliedJob];

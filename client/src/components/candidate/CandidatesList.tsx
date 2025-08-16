@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { graphqlService } from '../../services/graphql.service';
+import { AppliedJob, AppliedJobStatus, CandidateSortField, CandidateStatus, SortOrder } from '../../types';
 import type { CandidateOutput } from '../../types/outputs';
 import CandidateItem from '../ui/CandidateItem';
 
@@ -9,15 +10,28 @@ type CandidateListProps = {
     onViewFeedback: (candidateId: string) => void;
 };
 
+const statusOptions = ["ALL", "OPEN", "CLOSED"] as const;
+type StatusFilter = typeof statusOptions[number];
+
+const appliedJobOptions = ["ALL", ...Object.values(AppliedJob)] as const;
+type AppliedJobFilter = typeof appliedJobOptions[number];
+
+const appliedJobStatusOptions = ["ALL", ...Object.values(AppliedJobStatus)] as const;
+type AppliedJobStatusFilter = typeof appliedJobStatusOptions[number];
+
 function CandidateList({ onViewDetails, onViewFeedback }: CandidateListProps) {
     const [candidates, setCandidates] = useState<CandidateOutput[]>([]);
     const [loading, setLoading] = useState(false);
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState<string>('all');
-    const [positionFilter, setPositionFilter] = useState<string>('all');
-    const [sortBy, setSortBy] = useState<'name' | 'position' | 'experience' | 'addedDate'>('addedDate');
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
+    const [appliedJobFilter, setAppliedJobFilter] = useState<AppliedJobFilter>("ALL");
+    const [appliedJobStatusFilter, setAppliedJobStatusFilter] = useState<AppliedJobStatusFilter>("ALL");
+
+    const [sortBy, setSortBy] = useState<CandidateSortField>(CandidateSortField.CREATED_AT);
+    const [sortOrder, setSortOrder] = useState<SortOrder>(SortOrder.DESC);
+
+
 
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -30,12 +44,27 @@ function CandidateList({ onViewDetails, onViewFeedback }: CandidateListProps) {
             const { items, total, totalPages } = await graphqlService.getCandidatesList(
                 currentPage,
                 itemsPerPage,
-                statusFilter !== 'all' ? statusFilter : undefined,
-                searchTerm.trim() || undefined,
-                positionFilter !== 'all' ? positionFilter : undefined,
-                sortBy,
-                sortOrder
+                {
+                    search: searchTerm.trim() || undefined,
+                    status:
+                        statusFilter !== 'ALL'
+                            ? CandidateStatus[statusFilter as keyof typeof CandidateStatus]
+                            : undefined,
+                    jobType:
+                        appliedJobFilter !== 'ALL'
+                            ? (AppliedJob[appliedJobFilter.replace(/\s+/g, '_').toUpperCase() as keyof typeof AppliedJob])
+                            : undefined,
+                    jobStatus:
+                        appliedJobStatusFilter !== 'ALL'
+                            ? AppliedJobStatus[appliedJobStatusFilter.replace(/\s+/g, '_').toUpperCase() as keyof typeof AppliedJobStatus]
+                            : undefined,
+                },
+                {
+                    field: sortBy,
+                    direction: sortOrder.toUpperCase() as "ASC" | "DESC",
+                }
             );
+
             setCandidates(items);
             setTotal(total);
             setTotalPages(totalPages);
@@ -48,11 +77,27 @@ function CandidateList({ onViewDetails, onViewFeedback }: CandidateListProps) {
 
     useEffect(() => {
         loadCandidates();
-    }, [currentPage, searchTerm, statusFilter, positionFilter, sortBy, sortOrder, itemsPerPage]);
+    }, [
+        currentPage,
+        searchTerm,
+        statusFilter,
+        appliedJobFilter,
+        appliedJobStatusFilter,
+        sortBy,
+        sortOrder,
+        itemsPerPage
+    ]);
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, statusFilter, positionFilter, sortBy, sortOrder]);
+    }, [
+        searchTerm,
+        statusFilter,
+        appliedJobFilter,
+        appliedJobStatusFilter,
+        sortBy,
+        sortOrder
+    ]);
 
     return (
         <>
@@ -78,37 +123,54 @@ function CandidateList({ onViewDetails, onViewFeedback }: CandidateListProps) {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="border rounded px-2 py-1 text-sm"
                         />
+
                         <select
-                            value={positionFilter}
-                            onChange={(e) => setPositionFilter(e.target.value)}
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
                             className="border rounded px-2 py-1 text-sm"
                         >
-                            <option value="all">All Roles</option>
-                            <option value="Actuary">Actuary</option>
-                            <option value="Operations">Operations</option>
-                            <option value="Fullstack Developer">Fullstack Developer</option>
+                            {statusOptions.map((status) => (
+                                <option key={status} value={status}>{status}</option>
+                            ))}
                         </select>
-                        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border rounded px-2 py-1 text-sm">
-                            <option value="all">All Statuses</option>
-                            <option value="active">Active</option>
-                            <option value="hired">Hired</option>
-                            <option value="rejected">Rejected</option>
+
+                        <select
+                            value={appliedJobFilter}
+                            onChange={(e) => setAppliedJobFilter(e.target.value as AppliedJobFilter)}
+                            className="border rounded px-2 py-1 text-sm"
+                        >
+                            {appliedJobOptions.map((job) => (
+                                <option key={job} value={job}>{job}</option>
+                            ))}
                         </select>
-                        <select value={positionFilter} onChange={(e) => setPositionFilter(e.target.value)} className="border rounded px-2 py-1 text-sm">
-                            <option value="all">All Positions</option>
-                            <option value="Frontend Developer">Frontend</option>
-                            <option value="Backend Developer">Backend</option>
-                            <option value="fullstack">Fullstack</option>
+
+                        <select
+                            value={appliedJobStatusFilter}
+                            onChange={(e) => setAppliedJobStatusFilter(e.target.value as AppliedJobStatusFilter)}
+                            className="border rounded px-2 py-1 text-sm"
+                        >
+                            {appliedJobStatusOptions.map((status) => (
+                                <option key={status} value={status}>{status}</option>
+                            ))}
                         </select>
-                        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)} className="border rounded px-2 py-1 text-sm">
-                            <option value="name">Name</option>
-                            <option value="position">Position</option>
-                            <option value="experience">Experience</option>
-                            <option value="addedDate">Added Date</option>
+
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as CandidateSortField)}
+                            className="border rounded px-2 py-1 text-sm"
+                        >
+                            <option value="FIRST_NAME">First Name</option>
+                            <option value="LAST_NAME">Last Name</option>
+                            <option value="CREATED_AT">Created At</option>
                         </select>
-                        <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)} className="border rounded px-2 py-1 text-sm">
-                            <option value="asc">Asc</option>
-                            <option value="desc">Desc</option>
+
+                        <select
+                            value={sortOrder}
+                            onChange={(e) => setSortOrder(e.target.value as SortOrder)}
+                            className="border rounded px-2 py-1 text-sm"
+                        >
+                            <option value={SortOrder.ASC}>Asc</option>
+                            <option value={SortOrder.DESC}>Desc</option>
                         </select>
                     </div>
                 </div>
